@@ -184,8 +184,8 @@
 <h4>1.5.2. spec<a class=headerlink href=#spec title="Permalink to this headline">¶</a></h4>
 <p>クラウド環境の VM/BM における CPU コア数、搭載メモリ量などの設定。
 VCP SDK の flavor を定義して設定するか、または項目ごとに値を設定する。</p>
-<p>クラウドプロバイダごとの項目は、 <a class="reference external" href=#id9>spec一覧</a> を参照。
-指定可能な個数や条件は <a class="reference external" href=#vcpsdk.vcpsdk.VcpUnitGroupClass.delete_units>APIドキュメント</a> を参照。</p>
+<p>クラウドプロバイダごとの項目は、 <a class="reference external" href=#id13>spec一覧</a> を参照。
+指定可能な個数や条件は <a class="reference external" href=#vcpsdk.vcpsdk.VcpSDK.get_spec>APIドキュメント</a> を参照。</p>
 <div class=highlight-python><div class=highlight><pre><span></span><span class=c1># flavor か取得</span>
 <span class=n>spec</span> <span class=o>=</span> <span class=n>sdk</span><span class=o>.</span><span class=n>get_spec</span><span class=p>(</span><span class=s1>'aws'</span><span class=p>,</span> <span class=s1>'small'</span><span class=p>)</span>
 
