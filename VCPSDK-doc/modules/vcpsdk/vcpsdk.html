@@ -8,7 +8,7 @@
   <title>vcpsdk.vcpsdk &mdash; VCP  ドキュメント</title>
       <link rel="stylesheet" type="text/css" href="../../static/pygments.css?v=03e43079" />
       <link rel="stylesheet" type="text/css" href="../../static/css/theme.css?v=e59714d7" />
-      <link rel="stylesheet" type="text/css" href="../../static/css/fix-layout-pyproperty.css?v=9367d857" />
+      <link rel="stylesheet" type="text/css" href="../../static/css/custom.css?v=9367d857" />
 
   
       <script src="../../static/jquery.js?v=5d32c60e"></script>
@@ -46,10 +46,10 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">目次:</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../vcpsdk_man.html">1. VCP SDK の機能仕様とシステム設計について</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../vcpsdk.html">2. VCP SDK</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../vcplib.html">3. VCP LIB</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../vcpcli.html">4. VCP CLI操作説明書</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../contents/vcpsdk_man.html">1. VCP SDK の機能仕様とシステム設計について</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../contents/vcpsdk.html">2. VCP SDK</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../contents/vcplib.html">3. VCP LIB</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../contents/vcpcli.html">4. VCP CLI操作説明書</a></li>
 </ul>
 
         </div>
@@ -129,7 +129,7 @@
 
 
 <div class="viewcode-block" id="VcpSpecClass">
-<a class="viewcode-back" href="../../vcpsdk.html#vcpsdk.vcpsdk.VcpSpecClass">[ドキュメント]</a>
+<a class="viewcode-back" href="../../contents/vcpsdk.html#vcpsdk.vcpsdk.VcpSpecClass">[ドキュメント]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">VcpSpecClass</span><span class="p">:</span>
 
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
@@ -149,7 +149,7 @@
         <span class="k">return</span> <span class="nb">globals</span><span class="p">()[</span><span class="n">class_name</span><span class="p">]</span>
 
 <div class="viewcode-block" id="VcpSpecClass.find_spec">
-<a class="viewcode-back" href="../../vcpsdk.html#vcpsdk.vcpsdk.VcpSpecClass.find_spec">[ドキュメント]</a>
+<a class="viewcode-back" href="../../contents/vcpsdk.html#vcpsdk.vcpsdk.VcpSpecClass.find_spec">[ドキュメント]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">find_spec</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">provider_name</span><span class="p">,</span> <span class="n">flavor</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        プロバイダ名と、flavorからspec情報を生成</span>
@@ -184,7 +184,7 @@
 
 
 <div class="viewcode-block" id="VcpExtClass">
-<a class="viewcode-back" href="../../vcpsdk.html#vcpsdk.vcpsdk.VcpExtClass">[ドキュメント]</a>
+<a class="viewcode-back" href="../../contents/vcpsdk.html#vcpsdk.vcpsdk.VcpExtClass">[ドキュメント]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">VcpExtClass</span><span class="p">:</span>
 
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
@@ -206,7 +206,7 @@
         <span class="k">return</span> <span class="nb">globals</span><span class="p">()[</span><span class="n">class_name</span><span class="p">]</span>
 
 <div class="viewcode-block" id="VcpExtClass.find_extension">
-<a class="viewcode-back" href="../../vcpsdk.html#vcpsdk.vcpsdk.VcpExtClass.find_extension">[ドキュメント]</a>
+<a class="viewcode-back" href="../../contents/vcpsdk.html#vcpsdk.vcpsdk.VcpExtClass.find_extension">[ドキュメント]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">find_extension</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">provider_name</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        プロバイダ名からextension情報を生成</span>
@@ -240,7 +240,7 @@
 
 
 <div class="viewcode-block" id="VcpUnitClass">
-<a class="viewcode-back" href="../../vcpsdk.html#vcpsdk.vcpsdk.VcpUnitClass">[ドキュメント]</a>
+<a class="viewcode-back" href="../../contents/vcpsdk.html#vcpsdk.vcpsdk.VcpUnitClass">[ドキュメント]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">VcpUnitClass</span><span class="p">:</span>
 
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
@@ -298,7 +298,7 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_unit</span><span class="o">.</span><span class="n">state</span>
 
 <div class="viewcode-block" id="VcpUnitClass.watch">
-<a class="viewcode-back" href="../../vcpsdk.html#vcpsdk.vcpsdk.VcpUnitClass.watch">[ドキュメント]</a>
+<a class="viewcode-back" href="../../contents/vcpsdk.html#vcpsdk.vcpsdk.VcpUnitClass.watch">[ドキュメント]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">watch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">wait_for</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Unit監視開始</span>
@@ -318,7 +318,7 @@
 
 
 <div class="viewcode-block" id="VcpUnitClass.unwatch">
-<a class="viewcode-back" href="../../vcpsdk.html#vcpsdk.vcpsdk.VcpUnitClass.unwatch">[ドキュメント]</a>
+<a class="viewcode-back" href="../../contents/vcpsdk.html#vcpsdk.vcpsdk.VcpUnitClass.unwatch">[ドキュメント]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">unwatch</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Unit監視停止</span>
@@ -331,7 +331,7 @@
 
 
 <div class="viewcode-block" id="VcpUnitClass.df_nodes">
-<a class="viewcode-back" href="../../vcpsdk.html#vcpsdk.vcpsdk.VcpUnitClass.df_nodes">[ドキュメント]</a>
+<a class="viewcode-back" href="../../contents/vcpsdk.html#vcpsdk.vcpsdk.VcpUnitClass.df_nodes">[ドキュメント]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">df_nodes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">privileged</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        node一覧(DataFrame形式)</span>
@@ -353,7 +353,7 @@
 
 
 <div class="viewcode-block" id="VcpUnitClass.find_nodes">
-<a class="viewcode-back" href="../../vcpsdk.html#vcpsdk.vcpsdk.VcpUnitClass.find_nodes">[ドキュメント]</a>
+<a class="viewcode-back" href="../../contents/vcpsdk.html#vcpsdk.vcpsdk.VcpUnitClass.find_nodes">[ドキュメント]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">find_nodes</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">node_id</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
@@ -432,7 +432,7 @@
         <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">node</span><span class="p">:</span> <span class="n">node</span><span class="o">.</span><span class="n">cloud_instance_address</span><span class="p">,</span> <span class="n">nodes</span><span class="p">))</span>
 
 <div class="viewcode-block" id="VcpUnitClass.add_nodes">
-<a class="viewcode-back" href="../../vcpsdk.html#vcpsdk.vcpsdk.VcpUnitClass.add_nodes">[ドキュメント]</a>
+<a class="viewcode-back" href="../../contents/vcpsdk.html#vcpsdk.vcpsdk.VcpUnitClass.add_nodes">[ドキュメント]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">add_nodes</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">num_add_nodes</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
@@ -527,7 +527,7 @@
         <span class="k">return</span> <span class="n">num_nodes</span>
 
 <div class="viewcode-block" id="VcpUnitClass.delete_nodes">
-<a class="viewcode-back" href="../../vcpsdk.html#vcpsdk.vcpsdk.VcpUnitClass.delete_nodes">[ドキュメント]</a>
+<a class="viewcode-back" href="../../contents/vcpsdk.html#vcpsdk.vcpsdk.VcpUnitClass.delete_nodes">[ドキュメント]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">delete_nodes</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">num_delete_nodes</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
@@ -610,7 +610,7 @@
 
 
 <div class="viewcode-block" id="VcpUnitClass.watch_nodes">
-<a class="viewcode-back" href="../../vcpsdk.html#vcpsdk.vcpsdk.VcpUnitClass.watch_nodes">[ドキュメント]</a>
+<a class="viewcode-back" href="../../contents/vcpsdk.html#vcpsdk.vcpsdk.VcpUnitClass.watch_nodes">[ドキュメント]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">watch_nodes</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">num_watch_nodes</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
@@ -692,7 +692,7 @@
 
 
 <div class="viewcode-block" id="VcpUnitClass.unwatch_nodes">
-<a class="viewcode-back" href="../../vcpsdk.html#vcpsdk.vcpsdk.VcpUnitClass.unwatch_nodes">[ドキュメント]</a>
+<a class="viewcode-back" href="../../contents/vcpsdk.html#vcpsdk.vcpsdk.VcpUnitClass.unwatch_nodes">[ドキュメント]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">unwatch_nodes</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">num_watch_nodes</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
@@ -764,7 +764,7 @@
 
 
 <div class="viewcode-block" id="VcpUnitClass.power_off_nodes">
-<a class="viewcode-back" href="../../vcpsdk.html#vcpsdk.vcpsdk.VcpUnitClass.power_off_nodes">[ドキュメント]</a>
+<a class="viewcode-back" href="../../contents/vcpsdk.html#vcpsdk.vcpsdk.VcpUnitClass.power_off_nodes">[ドキュメント]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">power_off_nodes</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">num_power_off_nodes</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
@@ -847,7 +847,7 @@
 
 
 <div class="viewcode-block" id="VcpUnitClass.power_on_nodes">
-<a class="viewcode-back" href="../../vcpsdk.html#vcpsdk.vcpsdk.VcpUnitClass.power_on_nodes">[ドキュメント]</a>
+<a class="viewcode-back" href="../../contents/vcpsdk.html#vcpsdk.vcpsdk.VcpUnitClass.power_on_nodes">[ドキュメント]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">power_on_nodes</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">num_power_on_nodes</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
@@ -996,7 +996,7 @@
 
 
 <div class="viewcode-block" id="VcpUnitGroupClass">
-<a class="viewcode-back" href="../../vcpsdk.html#vcpsdk.vcpsdk.VcpUnitGroupClass">[ドキュメント]</a>
+<a class="viewcode-back" href="../../contents/vcpsdk.html#vcpsdk.vcpsdk.VcpUnitGroupClass">[ドキュメント]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">VcpUnitGroupClass</span><span class="p">:</span>
 
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
@@ -1087,7 +1087,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">_update_name</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
 
 <div class="viewcode-block" id="VcpUnitGroupClass.create_unit">
-<a class="viewcode-back" href="../../vcpsdk.html#vcpsdk.vcpsdk.VcpUnitGroupClass.create_unit">[ドキュメント]</a>
+<a class="viewcode-back" href="../../contents/vcpsdk.html#vcpsdk.vcpsdk.VcpUnitGroupClass.create_unit">[ドキュメント]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">create_unit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">unit_name</span><span class="p">,</span> <span class="n">spec</span><span class="p">,</span> <span class="n">wait_for</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">privileged</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=-</span><span class="mi">1</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Unit作成</span>
@@ -1143,7 +1143,7 @@
 
 
 <div class="viewcode-block" id="VcpUnitGroupClass.delete_units">
-<a class="viewcode-back" href="../../vcpsdk.html#vcpsdk.vcpsdk.VcpUnitGroupClass.delete_units">[ドキュメント]</a>
+<a class="viewcode-back" href="../../contents/vcpsdk.html#vcpsdk.vcpsdk.VcpUnitGroupClass.delete_units">[ドキュメント]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">delete_units</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">unit_name</span><span class="p">,</span> <span class="n">wait_for</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">force</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">privileged</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span>
     <span class="p">):</span>
@@ -1227,7 +1227,7 @@
             <span class="n">VcpSDKError</span><span class="p">(</span><span class="s2">&quot;Full of waiting time (</span><span class="si">{}</span><span class="s2">)&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">unit_name</span><span class="p">))</span>
 
 <div class="viewcode-block" id="VcpUnitGroupClass.df_units">
-<a class="viewcode-back" href="../../vcpsdk.html#vcpsdk.vcpsdk.VcpUnitGroupClass.df_units">[ドキュメント]</a>
+<a class="viewcode-back" href="../../contents/vcpsdk.html#vcpsdk.vcpsdk.VcpUnitGroupClass.df_units">[ドキュメント]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">df_units</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">privileged</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        unit一覧(DataFrame形式)</span>
@@ -1245,7 +1245,7 @@
 
 
 <div class="viewcode-block" id="VcpUnitGroupClass.df_nodes">
-<a class="viewcode-back" href="../../vcpsdk.html#vcpsdk.vcpsdk.VcpUnitGroupClass.df_nodes">[ドキュメント]</a>
+<a class="viewcode-back" href="../../contents/vcpsdk.html#vcpsdk.vcpsdk.VcpUnitGroupClass.df_nodes">[ドキュメント]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">df_nodes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">privileged</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        node一覧(DataFrame形式)</span>
@@ -1270,7 +1270,7 @@
 
 
 <div class="viewcode-block" id="VcpUnitGroupClass.find_units">
-<a class="viewcode-back" href="../../vcpsdk.html#vcpsdk.vcpsdk.VcpUnitGroupClass.find_units">[ドキュメント]</a>
+<a class="viewcode-back" href="../../contents/vcpsdk.html#vcpsdk.vcpsdk.VcpUnitGroupClass.find_units">[ドキュメント]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">find_units</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">unit_name</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">privileged</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        検索条件にマッチするunit検索</span>
@@ -1300,7 +1300,7 @@
 
 
 <div class="viewcode-block" id="VcpUnitGroupClass.get_unit">
-<a class="viewcode-back" href="../../vcpsdk.html#vcpsdk.vcpsdk.VcpUnitGroupClass.get_unit">[ドキュメント]</a>
+<a class="viewcode-back" href="../../contents/vcpsdk.html#vcpsdk.vcpsdk.VcpUnitGroupClass.get_unit">[ドキュメント]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_unit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">unit_name</span><span class="p">,</span> <span class="n">privileged</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        unit名を指定してunit取得</span>
@@ -1334,7 +1334,7 @@
         <span class="c1"># VC作成</span>
 
 <div class="viewcode-block" id="VcpUnitGroupClass.find_nodes">
-<a class="viewcode-back" href="../../vcpsdk.html#vcpsdk.vcpsdk.VcpUnitGroupClass.find_nodes">[ドキュメント]</a>
+<a class="viewcode-back" href="../../contents/vcpsdk.html#vcpsdk.vcpsdk.VcpUnitGroupClass.find_nodes">[ドキュメント]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">find_nodes</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">unit_name</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
@@ -1416,7 +1416,7 @@
         <span class="n">unset_privilege_mode</span><span class="p">(</span><span class="n">privileged</span><span class="o">=</span><span class="n">privileged</span><span class="p">)</span>
 
 <div class="viewcode-block" id="VcpUnitGroupClass.change_owner">
-<a class="viewcode-back" href="../../vcpsdk.html#vcpsdk.vcpsdk.VcpUnitGroupClass.change_owner">[ドキュメント]</a>
+<a class="viewcode-back" href="../../contents/vcpsdk.html#vcpsdk.vcpsdk.VcpUnitGroupClass.change_owner">[ドキュメント]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">change_owner</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">new_owner</span><span class="p">,</span> <span class="n">privileged</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        VCの所有者変更</span>
@@ -1437,7 +1437,7 @@
 
 
 <div class="viewcode-block" id="VcpUnitGroupClass.cleanup">
-<a class="viewcode-back" href="../../vcpsdk.html#vcpsdk.vcpsdk.VcpUnitGroupClass.cleanup">[ドキュメント]</a>
+<a class="viewcode-back" href="../../contents/vcpsdk.html#vcpsdk.vcpsdk.VcpUnitGroupClass.cleanup">[ドキュメント]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">cleanup</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">wait_for</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">privileged</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        VC初期化(Vc配下の全てのUnitとNodeを削除)</span>
@@ -1550,7 +1550,7 @@
         <span class="k">return</span> <span class="n">my_cci</span>
 
 <div class="viewcode-block" id="VcpUnitGroupClass.update_ugroup_name">
-<a class="viewcode-back" href="../../vcpsdk.html#vcpsdk.vcpsdk.VcpUnitGroupClass.update_ugroup_name">[ドキュメント]</a>
+<a class="viewcode-back" href="../../contents/vcpsdk.html#vcpsdk.vcpsdk.VcpUnitGroupClass.update_ugroup_name">[ドキュメント]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">update_ugroup_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ugroup_name</span><span class="p">,</span> <span class="n">ugroup_type</span><span class="o">=</span><span class="s2">&quot;compute&quot;</span><span class="p">,</span> <span class="n">privileged</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        UnitGroup名を設定</span>
@@ -1576,7 +1576,7 @@
 
 
 <div class="viewcode-block" id="VcpSDK">
-<a class="viewcode-back" href="../../vcpsdk.html#vcpsdk.vcpsdk.VcpSDK">[ドキュメント]</a>
+<a class="viewcode-back" href="../../contents/vcpsdk.html#vcpsdk.vcpsdk.VcpSDK">[ドキュメント]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">VcpSDK</span><span class="p">:</span>
 
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
@@ -1654,7 +1654,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">authority</span><span class="p">()</span>
 
 <div class="viewcode-block" id="VcpSDK.authority">
-<a class="viewcode-back" href="../../vcpsdk.html#vcpsdk.vcpsdk.VcpSDK.authority">[ドキュメント]</a>
+<a class="viewcode-back" href="../../contents/vcpsdk.html#vcpsdk.vcpsdk.VcpSDK.authority">[ドキュメント]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">authority</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">            authority 情報の取得</span>
@@ -1704,7 +1704,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_config_dir</span> <span class="o">=</span> <span class="n">config_dir</span>
 
 <div class="viewcode-block" id="VcpSDK.get_spec">
-<a class="viewcode-back" href="../../vcpsdk.html#vcpsdk.vcpsdk.VcpSDK.get_spec">[ドキュメント]</a>
+<a class="viewcode-back" href="../../contents/vcpsdk.html#vcpsdk.vcpsdk.VcpSDK.get_spec">[ドキュメント]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_spec</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">provider_name</span><span class="p">,</span> <span class="n">flavor</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Spec情報の取得</span>
@@ -1718,7 +1718,7 @@
 
 
 <div class="viewcode-block" id="VcpSDK.get_extension">
-<a class="viewcode-back" href="../../vcpsdk.html#vcpsdk.vcpsdk.VcpSDK.get_extension">[ドキュメント]</a>
+<a class="viewcode-back" href="../../contents/vcpsdk.html#vcpsdk.vcpsdk.VcpSDK.get_extension">[ドキュメント]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_extension</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">provider_name</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        extension(plugin拡張項目)情報の取得</span>
@@ -1731,7 +1731,7 @@
 
 
 <div class="viewcode-block" id="VcpSDK.create_ugroup">
-<a class="viewcode-back" href="../../vcpsdk.html#vcpsdk.vcpsdk.VcpSDK.create_ugroup">[ドキュメント]</a>
+<a class="viewcode-back" href="../../contents/vcpsdk.html#vcpsdk.vcpsdk.VcpSDK.create_ugroup">[ドキュメント]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">create_ugroup</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ugroup_name</span><span class="p">,</span> <span class="n">ugroup_type</span><span class="o">=</span><span class="s2">&quot;compute&quot;</span><span class="p">,</span> <span class="n">privileged</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        UnitGroupの作成</span>
@@ -1760,7 +1760,7 @@
 
 
 <div class="viewcode-block" id="VcpSDK.df_ugroups">
-<a class="viewcode-back" href="../../vcpsdk.html#vcpsdk.vcpsdk.VcpSDK.df_ugroups">[ドキュメント]</a>
+<a class="viewcode-back" href="../../contents/vcpsdk.html#vcpsdk.vcpsdk.VcpSDK.df_ugroups">[ドキュメント]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">df_ugroups</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">privileged</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        UnitGroup 一覧(DataFrame)</span>
@@ -1778,7 +1778,7 @@
 
 
 <div class="viewcode-block" id="VcpSDK.df_nodes">
-<a class="viewcode-back" href="../../vcpsdk.html#vcpsdk.vcpsdk.VcpSDK.df_nodes">[ドキュメント]</a>
+<a class="viewcode-back" href="../../contents/vcpsdk.html#vcpsdk.vcpsdk.VcpSDK.df_nodes">[ドキュメント]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">df_nodes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">privileged</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        All node一覧(DataFrame形式)</span>
@@ -1801,7 +1801,7 @@
 
 
 <div class="viewcode-block" id="VcpSDK.find_ugroups">
-<a class="viewcode-back" href="../../vcpsdk.html#vcpsdk.vcpsdk.VcpSDK.find_ugroups">[ドキュメント]</a>
+<a class="viewcode-back" href="../../contents/vcpsdk.html#vcpsdk.vcpsdk.VcpSDK.find_ugroups">[ドキュメント]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">find_ugroups</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">ugroup_name</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
@@ -1847,7 +1847,7 @@
 
 
 <div class="viewcode-block" id="VcpSDK.get_ugroup">
-<a class="viewcode-back" href="../../vcpsdk.html#vcpsdk.vcpsdk.VcpSDK.get_ugroup">[ドキュメント]</a>
+<a class="viewcode-back" href="../../contents/vcpsdk.html#vcpsdk.vcpsdk.VcpSDK.get_ugroup">[ドキュメント]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_ugroup</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ugroup_name</span><span class="p">,</span> <span class="n">privileged</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        unit group名を指定して、UnitGroup取得</span>
@@ -1894,7 +1894,7 @@
         <span class="k">return</span> <span class="s2">&quot;&quot;</span>
 
 <div class="viewcode-block" id="VcpSDK.version">
-<a class="viewcode-back" href="../../vcpsdk.html#vcpsdk.vcpsdk.VcpSDK.version">[ドキュメント]</a>
+<a class="viewcode-back" href="../../contents/vcpsdk.html#vcpsdk.vcpsdk.VcpSDK.version">[ドキュメント]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">version</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        VCP Libのバージョン出力</span>
@@ -2003,7 +2003,7 @@
 
 
 <div class="viewcode-block" id="VcpSDK.version_dict">
-<a class="viewcode-back" href="../../vcpsdk.html#vcpsdk.vcpsdk.VcpSDK.version_dict">[ドキュメント]</a>
+<a class="viewcode-back" href="../../contents/vcpsdk.html#vcpsdk.vcpsdk.VcpSDK.version_dict">[ドキュメント]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">version_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        VCP Libのバージョン出力(dict)</span>
@@ -2056,7 +2056,7 @@
 
 
 <div class="viewcode-block" id="VcpSDK.df_flavors">
-<a class="viewcode-back" href="../../vcpsdk.html#vcpsdk.vcpsdk.VcpSDK.df_flavors">[ドキュメント]</a>
+<a class="viewcode-back" href="../../contents/vcpsdk.html#vcpsdk.vcpsdk.VcpSDK.df_flavors">[ドキュメント]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">df_flavors</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">provider_name</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        flavor定義の一覧(DataFrame形式)</span>
@@ -2079,7 +2079,7 @@
 
 
 <div class="viewcode-block" id="VcpSDK.vcc_info">
-<a class="viewcode-back" href="../../vcpsdk.html#vcpsdk.vcpsdk.VcpSDK.vcc_info">[ドキュメント]</a>
+<a class="viewcode-back" href="../../contents/vcpsdk.html#vcpsdk.vcpsdk.VcpSDK.vcc_info">[ドキュメント]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">vcc_info</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">                VC Controllerに関する情報の取得</span>
@@ -2128,7 +2128,7 @@
 
 
 <div class="viewcode-block" id="VcpSDK.get_vpn_catalog">
-<a class="viewcode-back" href="../../vcpsdk.html#vcpsdk.vcpsdk.VcpSDK.get_vpn_catalog">[ドキュメント]</a>
+<a class="viewcode-back" href="../../contents/vcpsdk.html#vcpsdk.vcpsdk.VcpSDK.get_vpn_catalog">[ドキュメント]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_vpn_catalog</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">provider</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">vpn_catalog_name</span><span class="o">=</span><span class="s2">&quot;default&quot;</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        VC Controller からVPNカタログ情報を取得する</span>
@@ -2142,7 +2142,7 @@
 
 
 <div class="viewcode-block" id="VcpSDK.get_publickey">
-<a class="viewcode-back" href="../../vcpsdk.html#vcpsdk.vcpsdk.VcpSDK.get_publickey">[ドキュメント]</a>
+<a class="viewcode-back" href="../../contents/vcpsdk.html#vcpsdk.vcpsdk.VcpSDK.get_publickey">[ドキュメント]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_publickey</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        既存サーバ用 ssh 公開鍵取得</span>

@@ -3,7 +3,7 @@ VCP SDK API仕様書
 ======================================================
 
 .. toctree::
-   :maxdepth: 4
+   :maxdepth: 2
    :caption: 目次:
    :numbered:
 
