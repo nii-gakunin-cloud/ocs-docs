@@ -1,0 +1,489 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="ja" data-content_root="../../../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VCP SDK API仕様書 &mdash; VCP 25 ドキュメント</title>
+      <link rel="stylesheet" type="text/css" href="../../../../static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../../../../static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../../../../static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../../static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../../static/documentation_options.js?v=2e570880"></script>
+      <script src="../../../../static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../../static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../../../../static/translations.js?v=4755f45a"></script>
+    <script src="../../../../static/js/theme.js"></script>
+    <link rel="index" title="索引" href="../../../../genindex.html" />
+    <link rel="search" title="検索" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            VCP
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">目次:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../vcpsdk_man.html">1. VCP SDK の機能仕様とシステム設計について</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../vcpsdk.html">2. VCP SDK</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../vcplib.html">3. VCP LIB</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../vcpcli.html">4. VCP CLI操作説明書</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">VCP</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">VCP SDK API仕様書</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../../sources/tmp/vcpsdk/doc/docker/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="vcp-sdk-api">
+<h1>VCP SDK API仕様書<a class="headerlink" href="#vcp-sdk-api" title="Link to this heading"></a></h1>
+<div class="toctree-wrapper compound">
+<p class="caption" role="heading"><span class="caption-text">目次:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="vcpsdk_man.html">1. VCP SDK の機能仕様とシステム設計について</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="vcpsdk_man.html#id1">1.1. VCP SDK の利用環境の前提条件</a></li>
+<li class="toctree-l2"><a class="reference internal" href="vcpsdk_man.html#vcp">1.2. VCP による仮想システム環境の基本的な構成要素</a></li>
+<li class="toctree-l2"><a class="reference internal" href="vcpsdk_man.html#unitgroup">1.3. UnitGroup の状態定義</a></li>
+<li class="toctree-l2"><a class="reference internal" href="vcpsdk_man.html#node">1.4. Node の状態定義</a></li>
+<li class="toctree-l2"><a class="reference internal" href="vcpsdk_man.html#id2">1.5. VCP SDK が扱う計算資源の属性</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="vcpsdk_man.html#provider">1.5.1. provider</a></li>
+<li class="toctree-l3"><a class="reference internal" href="vcpsdk_man.html#spec">1.5.2. spec</a></li>
+<li class="toctree-l3"><a class="reference internal" href="vcpsdk_man.html#flavor">1.5.3. flavor</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="vcpsdk_man.html#vcp-sdk-api">1.6. VCP SDK API 利用方法</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="vcpsdk_man.html#id4">1.6.1. 起動</a></li>
+<li class="toctree-l3"><a class="reference internal" href="vcpsdk_man.html#id5">1.6.2. UnitGroup 確認</a></li>
+<li class="toctree-l3"><a class="reference internal" href="vcpsdk_man.html#unit-node">1.6.3. 起動した Unit, Node の確認</a></li>
+<li class="toctree-l3"><a class="reference internal" href="vcpsdk_man.html#id6">1.6.4. Node 追加</a></li>
+<li class="toctree-l3"><a class="reference internal" href="vcpsdk_man.html#id7">1.6.5. Node 削除</a></li>
+<li class="toctree-l3"><a class="reference internal" href="vcpsdk_man.html#unitgroup-unit">1.6.6. UnitGroup 初期化 (全 Unit 削除)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="vcpsdk_man.html#id8">1.6.7. spec のカスタマイズ</a></li>
+<li class="toctree-l3"><a class="reference internal" href="vcpsdk_man.html#id9">1.6.8. UnitGroup 情報の確認</a></li>
+<li class="toctree-l3"><a class="reference internal" href="vcpsdk_man.html#vpn">1.6.9. VPNカタログ情報の確認</a></li>
+<li class="toctree-l3"><a class="reference internal" href="vcpsdk_man.html#id10">1.6.10. 何か問題があったらバージョン情報を確認</a></li>
+<li class="toctree-l3"><a class="reference internal" href="vcpsdk_man.html#chameleon-cloud">1.6.11. Chameleon Cloud の例</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="vcpsdk_man.html#id11">1.7. VCP SDK の設定ファイル</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="vcpsdk_man.html#jupyternotebookvc">1.7.1. JupyterNotebookからVCコントローラに直接接続できないネットワーク構成の場合対応</a></li>
+<li class="toctree-l3"><a class="reference internal" href="vcpsdk_man.html#vcnode-dns">1.7.2. VcNode DNS の設定</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="vcpsdk_man.html#id12">1.8. 特権モード機能</a></li>
+<li class="toctree-l2"><a class="reference internal" href="vcpsdk_man.html#id13">1.9. spec 一覧</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="vcpsdk_man.html#provider-spec">1.9.1. provider 共通の spec</a></li>
+<li class="toctree-l3"><a class="reference internal" href="vcpsdk_man.html#id14">1.9.2. provider 固有の spec</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="vcpsdk.html">2. VCP SDK</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="vcpsdk.html#module-vcpsdk.vcpsdk">2.1. SDKベースクラス(vcpsdk/vcpsdk)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="vcpsdk.html#vcpsdk.vcpsdk.VcpExtClass"><code class="docutils literal notranslate"><span class="pre">VcpExtClass</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.vcpsdk.VcpExtClass.find_extension"><code class="docutils literal notranslate"><span class="pre">VcpExtClass.find_extension()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="vcpsdk.html#vcpsdk.vcpsdk.VcpSDK"><code class="docutils literal notranslate"><span class="pre">VcpSDK</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.vcpsdk.VcpSDK.authority"><code class="docutils literal notranslate"><span class="pre">VcpSDK.authority()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.vcpsdk.VcpSDK.config_dir"><code class="docutils literal notranslate"><span class="pre">VcpSDK.config_dir</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.vcpsdk.VcpSDK.create_ugroup"><code class="docutils literal notranslate"><span class="pre">VcpSDK.create_ugroup()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.vcpsdk.VcpSDK.df_flavors"><code class="docutils literal notranslate"><span class="pre">VcpSDK.df_flavors()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.vcpsdk.VcpSDK.df_nodes"><code class="docutils literal notranslate"><span class="pre">VcpSDK.df_nodes()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.vcpsdk.VcpSDK.df_ugroups"><code class="docutils literal notranslate"><span class="pre">VcpSDK.df_ugroups()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.vcpsdk.VcpSDK.find_ugroups"><code class="docutils literal notranslate"><span class="pre">VcpSDK.find_ugroups()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.vcpsdk.VcpSDK.get_extension"><code class="docutils literal notranslate"><span class="pre">VcpSDK.get_extension()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.vcpsdk.VcpSDK.get_publickey"><code class="docutils literal notranslate"><span class="pre">VcpSDK.get_publickey()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.vcpsdk.VcpSDK.get_spec"><code class="docutils literal notranslate"><span class="pre">VcpSDK.get_spec()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.vcpsdk.VcpSDK.get_ugroup"><code class="docutils literal notranslate"><span class="pre">VcpSDK.get_ugroup()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.vcpsdk.VcpSDK.get_vpn_catalog"><code class="docutils literal notranslate"><span class="pre">VcpSDK.get_vpn_catalog()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.vcpsdk.VcpSDK.vcc_info"><code class="docutils literal notranslate"><span class="pre">VcpSDK.vcc_info()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.vcpsdk.VcpSDK.verbose"><code class="docutils literal notranslate"><span class="pre">VcpSDK.verbose</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.vcpsdk.VcpSDK.version"><code class="docutils literal notranslate"><span class="pre">VcpSDK.version()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.vcpsdk.VcpSDK.version_dict"><code class="docutils literal notranslate"><span class="pre">VcpSDK.version_dict()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="vcpsdk.html#vcpsdk.vcpsdk.VcpSpecClass"><code class="docutils literal notranslate"><span class="pre">VcpSpecClass</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.vcpsdk.VcpSpecClass.find_spec"><code class="docutils literal notranslate"><span class="pre">VcpSpecClass.find_spec()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="vcpsdk.html#vcpsdk.vcpsdk.VcpUnitClass"><code class="docutils literal notranslate"><span class="pre">VcpUnitClass</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.vcpsdk.VcpUnitClass.add_nodes"><code class="docutils literal notranslate"><span class="pre">VcpUnitClass.add_nodes()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.vcpsdk.VcpUnitClass.delete_nodes"><code class="docutils literal notranslate"><span class="pre">VcpUnitClass.delete_nodes()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.vcpsdk.VcpUnitClass.df_nodes"><code class="docutils literal notranslate"><span class="pre">VcpUnitClass.df_nodes()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.vcpsdk.VcpUnitClass.find_nodes"><code class="docutils literal notranslate"><span class="pre">VcpUnitClass.find_nodes()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.vcpsdk.VcpUnitClass.name"><code class="docutils literal notranslate"><span class="pre">VcpUnitClass.name</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.vcpsdk.VcpUnitClass.power_off_nodes"><code class="docutils literal notranslate"><span class="pre">VcpUnitClass.power_off_nodes()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.vcpsdk.VcpUnitClass.power_on_nodes"><code class="docutils literal notranslate"><span class="pre">VcpUnitClass.power_on_nodes()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.vcpsdk.VcpUnitClass.state"><code class="docutils literal notranslate"><span class="pre">VcpUnitClass.state</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.vcpsdk.VcpUnitClass.unwatch"><code class="docutils literal notranslate"><span class="pre">VcpUnitClass.unwatch()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.vcpsdk.VcpUnitClass.unwatch_nodes"><code class="docutils literal notranslate"><span class="pre">VcpUnitClass.unwatch_nodes()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.vcpsdk.VcpUnitClass.watch"><code class="docutils literal notranslate"><span class="pre">VcpUnitClass.watch()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.vcpsdk.VcpUnitClass.watch_nodes"><code class="docutils literal notranslate"><span class="pre">VcpUnitClass.watch_nodes()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="vcpsdk.html#vcpsdk.vcpsdk.VcpUnitGroupClass"><code class="docutils literal notranslate"><span class="pre">VcpUnitGroupClass</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.vcpsdk.VcpUnitGroupClass.change_owner"><code class="docutils literal notranslate"><span class="pre">VcpUnitGroupClass.change_owner()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.vcpsdk.VcpUnitGroupClass.cleanup"><code class="docutils literal notranslate"><span class="pre">VcpUnitGroupClass.cleanup()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.vcpsdk.VcpUnitGroupClass.create_unit"><code class="docutils literal notranslate"><span class="pre">VcpUnitGroupClass.create_unit()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.vcpsdk.VcpUnitGroupClass.delete_units"><code class="docutils literal notranslate"><span class="pre">VcpUnitGroupClass.delete_units()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.vcpsdk.VcpUnitGroupClass.df_nodes"><code class="docutils literal notranslate"><span class="pre">VcpUnitGroupClass.df_nodes()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.vcpsdk.VcpUnitGroupClass.df_units"><code class="docutils literal notranslate"><span class="pre">VcpUnitGroupClass.df_units()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.vcpsdk.VcpUnitGroupClass.find_nodes"><code class="docutils literal notranslate"><span class="pre">VcpUnitGroupClass.find_nodes()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.vcpsdk.VcpUnitGroupClass.find_units"><code class="docutils literal notranslate"><span class="pre">VcpUnitGroupClass.find_units()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.vcpsdk.VcpUnitGroupClass.get_unit"><code class="docutils literal notranslate"><span class="pre">VcpUnitGroupClass.get_unit()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.vcpsdk.VcpUnitGroupClass.name"><code class="docutils literal notranslate"><span class="pre">VcpUnitGroupClass.name</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.vcpsdk.VcpUnitGroupClass.owner"><code class="docutils literal notranslate"><span class="pre">VcpUnitGroupClass.owner</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.vcpsdk.VcpUnitGroupClass.state"><code class="docutils literal notranslate"><span class="pre">VcpUnitGroupClass.state</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.vcpsdk.VcpUnitGroupClass.update_ugroup_name"><code class="docutils literal notranslate"><span class="pre">VcpUnitGroupClass.update_ugroup_name()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="vcpsdk.html#module-vcpsdk.plugins.aws">2.2. SDK plugins for AWS (vcpsdk/plugins/aws)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="vcpsdk.html#vcpsdk.plugins.aws.VcpSpecResourceAws"><code class="docutils literal notranslate"><span class="pre">VcpSpecResourceAws</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.plugins.aws.VcpSpecResourceAws.cci"><code class="docutils literal notranslate"><span class="pre">VcpSpecResourceAws.cci()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.plugins.aws.VcpSpecResourceAws.cloud_image"><code class="docutils literal notranslate"><span class="pre">VcpSpecResourceAws.cloud_image</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.plugins.aws.VcpSpecResourceAws.disks"><code class="docutils literal notranslate"><span class="pre">VcpSpecResourceAws.disks</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.plugins.aws.VcpSpecResourceAws.instance_type"><code class="docutils literal notranslate"><span class="pre">VcpSpecResourceAws.instance_type</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.plugins.aws.VcpSpecResourceAws.ip_addresses"><code class="docutils literal notranslate"><span class="pre">VcpSpecResourceAws.ip_addresses</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.plugins.aws.VcpSpecResourceAws.num_nodes"><code class="docutils literal notranslate"><span class="pre">VcpSpecResourceAws.num_nodes</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.plugins.aws.VcpSpecResourceAws.version"><code class="docutils literal notranslate"><span class="pre">VcpSpecResourceAws.version</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.plugins.aws.VcpSpecResourceAws.volume_size"><code class="docutils literal notranslate"><span class="pre">VcpSpecResourceAws.volume_size</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.plugins.aws.VcpSpecResourceAws.volume_type"><code class="docutils literal notranslate"><span class="pre">VcpSpecResourceAws.volume_type</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="vcpsdk.html#module-vcpsdk.plugins.azure">2.3. SDK plugins for Azure (vcpsdk/plugins/azure)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="vcpsdk.html#vcpsdk.plugins.azure.VcpSpecResourceAzure"><code class="docutils literal notranslate"><span class="pre">VcpSpecResourceAzure</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.plugins.azure.VcpSpecResourceAzure.cci"><code class="docutils literal notranslate"><span class="pre">VcpSpecResourceAzure.cci()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.plugins.azure.VcpSpecResourceAzure.cloud_image"><code class="docutils literal notranslate"><span class="pre">VcpSpecResourceAzure.cloud_image</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.plugins.azure.VcpSpecResourceAzure.disk_size_gb"><code class="docutils literal notranslate"><span class="pre">VcpSpecResourceAzure.disk_size_gb</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.plugins.azure.VcpSpecResourceAzure.disks"><code class="docutils literal notranslate"><span class="pre">VcpSpecResourceAzure.disks</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.plugins.azure.VcpSpecResourceAzure.ip_addresses"><code class="docutils literal notranslate"><span class="pre">VcpSpecResourceAzure.ip_addresses</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.plugins.azure.VcpSpecResourceAzure.managed_disk_type"><code class="docutils literal notranslate"><span class="pre">VcpSpecResourceAzure.managed_disk_type</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.plugins.azure.VcpSpecResourceAzure.num_nodes"><code class="docutils literal notranslate"><span class="pre">VcpSpecResourceAzure.num_nodes</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.plugins.azure.VcpSpecResourceAzure.version"><code class="docutils literal notranslate"><span class="pre">VcpSpecResourceAzure.version</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.plugins.azure.VcpSpecResourceAzure.vm_size"><code class="docutils literal notranslate"><span class="pre">VcpSpecResourceAzure.vm_size</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="vcpsdk.html#module-vcpsdk.plugins.sakura">2.4. SDK plugins for Sakura (vcpsdk/plugins/sakura)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="vcpsdk.html#vcpsdk.plugins.sakura.VcpSpecResourceSakura"><code class="docutils literal notranslate"><span class="pre">VcpSpecResourceSakura</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.plugins.sakura.VcpSpecResourceSakura.cci"><code class="docutils literal notranslate"><span class="pre">VcpSpecResourceSakura.cci()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.plugins.sakura.VcpSpecResourceSakura.cloud_image"><code class="docutils literal notranslate"><span class="pre">VcpSpecResourceSakura.cloud_image</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.plugins.sakura.VcpSpecResourceSakura.disks"><code class="docutils literal notranslate"><span class="pre">VcpSpecResourceSakura.disks</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.plugins.sakura.VcpSpecResourceSakura.ip_addresses"><code class="docutils literal notranslate"><span class="pre">VcpSpecResourceSakura.ip_addresses</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.plugins.sakura.VcpSpecResourceSakura.memory"><code class="docutils literal notranslate"><span class="pre">VcpSpecResourceSakura.memory</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.plugins.sakura.VcpSpecResourceSakura.num_cores"><code class="docutils literal notranslate"><span class="pre">VcpSpecResourceSakura.num_cores</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.plugins.sakura.VcpSpecResourceSakura.sakuracloud_disk_plan"><code class="docutils literal notranslate"><span class="pre">VcpSpecResourceSakura.sakuracloud_disk_plan</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.plugins.sakura.VcpSpecResourceSakura.sakuracloud_disk_size"><code class="docutils literal notranslate"><span class="pre">VcpSpecResourceSakura.sakuracloud_disk_size</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.plugins.sakura.VcpSpecResourceSakura.version"><code class="docutils literal notranslate"><span class="pre">VcpSpecResourceSakura.version</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="vcpsdk.html#module-vcpsdk.plugins.aic">2.5. SDK plugins for AIC(vcpsdk/plugins/aic)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="vcpsdk.html#vcpsdk.plugins.aic.VcpSpecResourceAic"><code class="docutils literal notranslate"><span class="pre">VcpSpecResourceAic</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.plugins.aic.VcpSpecResourceAic.cci"><code class="docutils literal notranslate"><span class="pre">VcpSpecResourceAic.cci()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.plugins.aic.VcpSpecResourceAic.cloud_image"><code class="docutils literal notranslate"><span class="pre">VcpSpecResourceAic.cloud_image</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.plugins.aic.VcpSpecResourceAic.flavor_name"><code class="docutils literal notranslate"><span class="pre">VcpSpecResourceAic.flavor_name</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.plugins.aic.VcpSpecResourceAic.ip_addresses"><code class="docutils literal notranslate"><span class="pre">VcpSpecResourceAic.ip_addresses</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.plugins.aic.VcpSpecResourceAic.num_nodes"><code class="docutils literal notranslate"><span class="pre">VcpSpecResourceAic.num_nodes</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.plugins.aic.VcpSpecResourceAic.version"><code class="docutils literal notranslate"><span class="pre">VcpSpecResourceAic.version</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="vcpsdk.html#module-vcpsdk.plugins.abc">2.6. SDK plugins for ABC (vcpsdk/plugins/abc)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="vcpsdk.html#vcpsdk.plugins.abc.VcpSpecResourceAbc"><code class="docutils literal notranslate"><span class="pre">VcpSpecResourceAbc</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.plugins.abc.VcpSpecResourceAbc.cci"><code class="docutils literal notranslate"><span class="pre">VcpSpecResourceAbc.cci()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.plugins.abc.VcpSpecResourceAbc.cloud_image"><code class="docutils literal notranslate"><span class="pre">VcpSpecResourceAbc.cloud_image</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.plugins.abc.VcpSpecResourceAbc.flavor_name"><code class="docutils literal notranslate"><span class="pre">VcpSpecResourceAbc.flavor_name</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.plugins.abc.VcpSpecResourceAbc.ip_addresses"><code class="docutils literal notranslate"><span class="pre">VcpSpecResourceAbc.ip_addresses</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.plugins.abc.VcpSpecResourceAbc.num_nodes"><code class="docutils literal notranslate"><span class="pre">VcpSpecResourceAbc.num_nodes</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.plugins.abc.VcpSpecResourceAbc.version"><code class="docutils literal notranslate"><span class="pre">VcpSpecResourceAbc.version</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="vcpsdk.html#module-vcpsdk.plugins.gcp">2.7. SDK plugins for GCP (vcpsdk/plugins/gcp)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="vcpsdk.html#vcpsdk.plugins.gcp.VcpSpecResourceGcp"><code class="docutils literal notranslate"><span class="pre">VcpSpecResourceGcp</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.plugins.gcp.VcpSpecResourceGcp.cci"><code class="docutils literal notranslate"><span class="pre">VcpSpecResourceGcp.cci()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.plugins.gcp.VcpSpecResourceGcp.cloud_image"><code class="docutils literal notranslate"><span class="pre">VcpSpecResourceGcp.cloud_image</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.plugins.gcp.VcpSpecResourceGcp.disk_size_gb"><code class="docutils literal notranslate"><span class="pre">VcpSpecResourceGcp.disk_size_gb</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.plugins.gcp.VcpSpecResourceGcp.disk_type"><code class="docutils literal notranslate"><span class="pre">VcpSpecResourceGcp.disk_type</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.plugins.gcp.VcpSpecResourceGcp.disks"><code class="docutils literal notranslate"><span class="pre">VcpSpecResourceGcp.disks</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.plugins.gcp.VcpSpecResourceGcp.ip_addresses"><code class="docutils literal notranslate"><span class="pre">VcpSpecResourceGcp.ip_addresses</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.plugins.gcp.VcpSpecResourceGcp.machine_type"><code class="docutils literal notranslate"><span class="pre">VcpSpecResourceGcp.machine_type</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.plugins.gcp.VcpSpecResourceGcp.num_nodes"><code class="docutils literal notranslate"><span class="pre">VcpSpecResourceGcp.num_nodes</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.plugins.gcp.VcpSpecResourceGcp.version"><code class="docutils literal notranslate"><span class="pre">VcpSpecResourceGcp.version</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="vcpsdk.html#module-vcpsdk.plugins.onpremises">2.8. SDK plugins for Onpremises (vcpsdk/plugins/onpremises)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="vcpsdk.html#vcpsdk.plugins.onpremises.VcpSpecResourceOnpremises"><code class="docutils literal notranslate"><span class="pre">VcpSpecResourceOnpremises</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.plugins.onpremises.VcpSpecResourceOnpremises.cci"><code class="docutils literal notranslate"><span class="pre">VcpSpecResourceOnpremises.cci()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.plugins.onpremises.VcpSpecResourceOnpremises.ip_addresses"><code class="docutils literal notranslate"><span class="pre">VcpSpecResourceOnpremises.ip_addresses</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.plugins.onpremises.VcpSpecResourceOnpremises.network_if"><code class="docutils literal notranslate"><span class="pre">VcpSpecResourceOnpremises.network_if</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.plugins.onpremises.VcpSpecResourceOnpremises.user_name"><code class="docutils literal notranslate"><span class="pre">VcpSpecResourceOnpremises.user_name</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.plugins.onpremises.VcpSpecResourceOnpremises.version"><code class="docutils literal notranslate"><span class="pre">VcpSpecResourceOnpremises.version</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="vcpsdk.html#module-vcpsdk.plugins.aws_disk">2.9. SDK plugins for AWS Disk (vcpsdk/plugins/aws_disk)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="vcpsdk.html#vcpsdk.plugins.aws_disk.VcpSpecResourceAwsDisk"><code class="docutils literal notranslate"><span class="pre">VcpSpecResourceAwsDisk</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.plugins.aws_disk.VcpSpecResourceAwsDisk.cci"><code class="docutils literal notranslate"><span class="pre">VcpSpecResourceAwsDisk.cci()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.plugins.aws_disk.VcpSpecResourceAwsDisk.cloud_image"><code class="docutils literal notranslate"><span class="pre">VcpSpecResourceAwsDisk.cloud_image</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.plugins.aws_disk.VcpSpecResourceAwsDisk.size"><code class="docutils literal notranslate"><span class="pre">VcpSpecResourceAwsDisk.size</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.plugins.aws_disk.VcpSpecResourceAwsDisk.type"><code class="docutils literal notranslate"><span class="pre">VcpSpecResourceAwsDisk.type</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.plugins.aws_disk.VcpSpecResourceAwsDisk.version"><code class="docutils literal notranslate"><span class="pre">VcpSpecResourceAwsDisk.version</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="vcpsdk.html#module-vcpsdk.plugins.azure_disk">2.10. SDK plugins for Azure Disk (vcpsdk/plugins/azure_disk)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="vcpsdk.html#vcpsdk.plugins.azure_disk.VcpSpecResourceAzureDisk"><code class="docutils literal notranslate"><span class="pre">VcpSpecResourceAzureDisk</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.plugins.azure_disk.VcpSpecResourceAzureDisk.cci"><code class="docutils literal notranslate"><span class="pre">VcpSpecResourceAzureDisk.cci()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.plugins.azure_disk.VcpSpecResourceAzureDisk.cloud_image"><code class="docutils literal notranslate"><span class="pre">VcpSpecResourceAzureDisk.cloud_image</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.plugins.azure_disk.VcpSpecResourceAzureDisk.disk_size_gb"><code class="docutils literal notranslate"><span class="pre">VcpSpecResourceAzureDisk.disk_size_gb</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.plugins.azure_disk.VcpSpecResourceAzureDisk.storage_account_type"><code class="docutils literal notranslate"><span class="pre">VcpSpecResourceAzureDisk.storage_account_type</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.plugins.azure_disk.VcpSpecResourceAzureDisk.version"><code class="docutils literal notranslate"><span class="pre">VcpSpecResourceAzureDisk.version</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="vcpsdk.html#module-vcpsdk.plugins.sakura_disk">2.11. SDK plugins for Sakura Disk (vcpsdk/plugins/sakura_disk)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="vcpsdk.html#vcpsdk.plugins.sakura_disk.VcpSpecResourceSakuraDisk"><code class="docutils literal notranslate"><span class="pre">VcpSpecResourceSakuraDisk</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.plugins.sakura_disk.VcpSpecResourceSakuraDisk.cci"><code class="docutils literal notranslate"><span class="pre">VcpSpecResourceSakuraDisk.cci()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.plugins.sakura_disk.VcpSpecResourceSakuraDisk.cloud_image"><code class="docutils literal notranslate"><span class="pre">VcpSpecResourceSakuraDisk.cloud_image</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.plugins.sakura_disk.VcpSpecResourceSakuraDisk.sakuracloud_disk_plan"><code class="docutils literal notranslate"><span class="pre">VcpSpecResourceSakuraDisk.sakuracloud_disk_plan</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.plugins.sakura_disk.VcpSpecResourceSakuraDisk.sakuracloud_disk_size"><code class="docutils literal notranslate"><span class="pre">VcpSpecResourceSakuraDisk.sakuracloud_disk_size</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.plugins.sakura_disk.VcpSpecResourceSakuraDisk.version"><code class="docutils literal notranslate"><span class="pre">VcpSpecResourceSakuraDisk.version</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="vcpsdk.html#module-vcpsdk.plugins.aws_spot">2.12. SDK plugins for AWS Spot Instance (vcpsdk/plugins/aws_spot)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="vcpsdk.html#vcpsdk.plugins.aws_spot.VcpSpecResourceAwsSpot"><code class="docutils literal notranslate"><span class="pre">VcpSpecResourceAwsSpot</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.plugins.aws_spot.VcpSpecResourceAwsSpot.block_duration_minutes"><code class="docutils literal notranslate"><span class="pre">VcpSpecResourceAwsSpot.block_duration_minutes</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.plugins.aws_spot.VcpSpecResourceAwsSpot.cci"><code class="docutils literal notranslate"><span class="pre">VcpSpecResourceAwsSpot.cci()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.plugins.aws_spot.VcpSpecResourceAwsSpot.spot_price"><code class="docutils literal notranslate"><span class="pre">VcpSpecResourceAwsSpot.spot_price</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.plugins.aws_spot.VcpSpecResourceAwsSpot.spot_type"><code class="docutils literal notranslate"><span class="pre">VcpSpecResourceAwsSpot.spot_type</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.plugins.aws_spot.VcpSpecResourceAwsSpot.version"><code class="docutils literal notranslate"><span class="pre">VcpSpecResourceAwsSpot.version</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="vcpsdk.html#module-vcpsdk.plugins.vmware">2.13. SDK plugins for VMware (vcpsdk/plugins/vmware)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="vcpsdk.html#vcpsdk.plugins.vmware.VcpSpecResourceVmware"><code class="docutils literal notranslate"><span class="pre">VcpSpecResourceVmware</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.plugins.vmware.VcpSpecResourceVmware.cci"><code class="docutils literal notranslate"><span class="pre">VcpSpecResourceVmware.cci()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.plugins.vmware.VcpSpecResourceVmware.cloud_image"><code class="docutils literal notranslate"><span class="pre">VcpSpecResourceVmware.cloud_image</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.plugins.vmware.VcpSpecResourceVmware.disk_size"><code class="docutils literal notranslate"><span class="pre">VcpSpecResourceVmware.disk_size</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.plugins.vmware.VcpSpecResourceVmware.ip_addresses"><code class="docutils literal notranslate"><span class="pre">VcpSpecResourceVmware.ip_addresses</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.plugins.vmware.VcpSpecResourceVmware.mac_addresses"><code class="docutils literal notranslate"><span class="pre">VcpSpecResourceVmware.mac_addresses</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.plugins.vmware.VcpSpecResourceVmware.memory"><code class="docutils literal notranslate"><span class="pre">VcpSpecResourceVmware.memory</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.plugins.vmware.VcpSpecResourceVmware.num_cpus"><code class="docutils literal notranslate"><span class="pre">VcpSpecResourceVmware.num_cpus</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.plugins.vmware.VcpSpecResourceVmware.num_nodes"><code class="docutils literal notranslate"><span class="pre">VcpSpecResourceVmware.num_nodes</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.plugins.vmware.VcpSpecResourceVmware.version"><code class="docutils literal notranslate"><span class="pre">VcpSpecResourceVmware.version</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="vcpsdk.html#module-vcpsdk.plugins.hokudai">2.14. SDK plugins for Hokudai (vcpsdk/plugins/hokudai)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="vcpsdk.html#vcpsdk.plugins.hokudai.VcpSpecResourceHokudai"><code class="docutils literal notranslate"><span class="pre">VcpSpecResourceHokudai</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.plugins.hokudai.VcpSpecResourceHokudai.cci"><code class="docutils literal notranslate"><span class="pre">VcpSpecResourceHokudai.cci()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.plugins.hokudai.VcpSpecResourceHokudai.cloud_image"><code class="docutils literal notranslate"><span class="pre">VcpSpecResourceHokudai.cloud_image</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.plugins.hokudai.VcpSpecResourceHokudai.flavor_name"><code class="docutils literal notranslate"><span class="pre">VcpSpecResourceHokudai.flavor_name</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.plugins.hokudai.VcpSpecResourceHokudai.ip_addresses"><code class="docutils literal notranslate"><span class="pre">VcpSpecResourceHokudai.ip_addresses</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.plugins.hokudai.VcpSpecResourceHokudai.num_nodes"><code class="docutils literal notranslate"><span class="pre">VcpSpecResourceHokudai.num_nodes</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.plugins.hokudai.VcpSpecResourceHokudai.version"><code class="docutils literal notranslate"><span class="pre">VcpSpecResourceHokudai.version</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.plugins.hokudai.VcpSpecResourceHokudai.volume_size"><code class="docutils literal notranslate"><span class="pre">VcpSpecResourceHokudai.volume_size</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="vcpsdk.html#module-vcpsdk.plugins.oracle">2.15. SDK plugins for Oracle Cloud (vcpsdk/plugins/oracle)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="vcpsdk.html#vcpsdk.plugins.oracle.VcpSpecResourceOracle"><code class="docutils literal notranslate"><span class="pre">VcpSpecResourceOracle</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.plugins.oracle.VcpSpecResourceOracle.boot_volume_size_in_gbs"><code class="docutils literal notranslate"><span class="pre">VcpSpecResourceOracle.boot_volume_size_in_gbs</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.plugins.oracle.VcpSpecResourceOracle.cci"><code class="docutils literal notranslate"><span class="pre">VcpSpecResourceOracle.cci()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.plugins.oracle.VcpSpecResourceOracle.cloud_image"><code class="docutils literal notranslate"><span class="pre">VcpSpecResourceOracle.cloud_image</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.plugins.oracle.VcpSpecResourceOracle.disks"><code class="docutils literal notranslate"><span class="pre">VcpSpecResourceOracle.disks</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.plugins.oracle.VcpSpecResourceOracle.ip_addresses"><code class="docutils literal notranslate"><span class="pre">VcpSpecResourceOracle.ip_addresses</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.plugins.oracle.VcpSpecResourceOracle.shape"><code class="docutils literal notranslate"><span class="pre">VcpSpecResourceOracle.shape</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.plugins.oracle.VcpSpecResourceOracle.version"><code class="docutils literal notranslate"><span class="pre">VcpSpecResourceOracle.version</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="vcpsdk.html#module-vcpsdk.plugins.oracle_disk">2.16. SDK plugins for Oracle Cloud Disk (vcpsdk/plugins/oracle_disk)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="vcpsdk.html#vcpsdk.plugins.oracle_disk.VcpSpecResourceOracleDisk"><code class="docutils literal notranslate"><span class="pre">VcpSpecResourceOracleDisk</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.plugins.oracle_disk.VcpSpecResourceOracleDisk.cci"><code class="docutils literal notranslate"><span class="pre">VcpSpecResourceOracleDisk.cci()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.plugins.oracle_disk.VcpSpecResourceOracleDisk.cloud_image"><code class="docutils literal notranslate"><span class="pre">VcpSpecResourceOracleDisk.cloud_image</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.plugins.oracle_disk.VcpSpecResourceOracleDisk.size_in_gbs"><code class="docutils literal notranslate"><span class="pre">VcpSpecResourceOracleDisk.size_in_gbs</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.plugins.oracle_disk.VcpSpecResourceOracleDisk.version"><code class="docutils literal notranslate"><span class="pre">VcpSpecResourceOracleDisk.version</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="vcpsdk.html#module-vcpsdk.plugins.chameleon">2.17. SDK plugins for Chameleon Cloud (vcpsdk/plugins/chameleon)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="vcpsdk.html#vcpsdk.plugins.chameleon.VcpSpecResourceChameleon"><code class="docutils literal notranslate"><span class="pre">VcpSpecResourceChameleon</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.plugins.chameleon.VcpSpecResourceChameleon.cci"><code class="docutils literal notranslate"><span class="pre">VcpSpecResourceChameleon.cci()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.plugins.chameleon.VcpSpecResourceChameleon.cloud_image"><code class="docutils literal notranslate"><span class="pre">VcpSpecResourceChameleon.cloud_image</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.plugins.chameleon.VcpSpecResourceChameleon.ip_addresses"><code class="docutils literal notranslate"><span class="pre">VcpSpecResourceChameleon.ip_addresses</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.plugins.chameleon.VcpSpecResourceChameleon.num_nodes"><code class="docutils literal notranslate"><span class="pre">VcpSpecResourceChameleon.num_nodes</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.plugins.chameleon.VcpSpecResourceChameleon.reservation"><code class="docutils literal notranslate"><span class="pre">VcpSpecResourceChameleon.reservation</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.plugins.chameleon.VcpSpecResourceChameleon.version"><code class="docutils literal notranslate"><span class="pre">VcpSpecResourceChameleon.version</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="vcpsdk.html#module-vcpsdk.plugins.chameleon_ext">2.18. SDK plugins for Chameleon Cloud extension (vcpsdk/plugins/chameleon_ext)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="vcpsdk.html#vcpsdk.plugins.chameleon_ext.VcpChameleonOpenrc"><code class="docutils literal notranslate"><span class="pre">VcpChameleonOpenrc</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="vcpsdk.html#vcpsdk.plugins.chameleon_ext.VcpExtResourceChameleon"><code class="docutils literal notranslate"><span class="pre">VcpExtResourceChameleon</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.plugins.chameleon_ext.VcpExtResourceChameleon.reserve_host"><code class="docutils literal notranslate"><span class="pre">VcpExtResourceChameleon.reserve_host()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.plugins.chameleon_ext.VcpExtResourceChameleon.setup"><code class="docutils literal notranslate"><span class="pre">VcpExtResourceChameleon.setup()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="vcpsdk.html#vcpsdk.plugins.chameleon_ext.VcpExtResourceChameleonHostLeaseInfo"><code class="docutils literal notranslate"><span class="pre">VcpExtResourceChameleonHostLeaseInfo</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.plugins.chameleon_ext.VcpExtResourceChameleonHostLeaseInfo.delete"><code class="docutils literal notranslate"><span class="pre">VcpExtResourceChameleonHostLeaseInfo.delete()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.plugins.chameleon_ext.VcpExtResourceChameleonHostLeaseInfo.extend"><code class="docutils literal notranslate"><span class="pre">VcpExtResourceChameleonHostLeaseInfo.extend()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.plugins.chameleon_ext.VcpExtResourceChameleonHostLeaseInfo.host_lease_id"><code class="docutils literal notranslate"><span class="pre">VcpExtResourceChameleonHostLeaseInfo.host_lease_id</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.plugins.chameleon_ext.VcpExtResourceChameleonHostLeaseInfo.reservation_id"><code class="docutils literal notranslate"><span class="pre">VcpExtResourceChameleonHostLeaseInfo.reservation_id</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.plugins.chameleon_ext.VcpExtResourceChameleonHostLeaseInfo.setup"><code class="docutils literal notranslate"><span class="pre">VcpExtResourceChameleonHostLeaseInfo.setup()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.plugins.chameleon_ext.VcpExtResourceChameleonHostLeaseInfo.status"><code class="docutils literal notranslate"><span class="pre">VcpExtResourceChameleonHostLeaseInfo.status</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.plugins.chameleon_ext.VcpExtResourceChameleonHostLeaseInfo.update"><code class="docutils literal notranslate"><span class="pre">VcpExtResourceChameleonHostLeaseInfo.update()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.plugins.chameleon_ext.VcpExtResourceChameleonHostLeaseInfo.wait"><code class="docutils literal notranslate"><span class="pre">VcpExtResourceChameleonHostLeaseInfo.wait()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="vcpsdk.html#vcpsdk.plugins.chameleon_ext.VcpExtResourceChameleonNetwork"><code class="docutils literal notranslate"><span class="pre">VcpExtResourceChameleonNetwork</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.plugins.chameleon_ext.VcpExtResourceChameleonNetwork.create_network"><code class="docutils literal notranslate"><span class="pre">VcpExtResourceChameleonNetwork.create_network()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.plugins.chameleon_ext.VcpExtResourceChameleonNetwork.network_exists"><code class="docutils literal notranslate"><span class="pre">VcpExtResourceChameleonNetwork.network_exists()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.plugins.chameleon_ext.VcpExtResourceChameleonNetwork.network_name"><code class="docutils literal notranslate"><span class="pre">VcpExtResourceChameleonNetwork.network_name</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcpsdk.html#vcpsdk.plugins.chameleon_ext.VcpExtResourceChameleonNetwork.setup"><code class="docutils literal notranslate"><span class="pre">VcpExtResourceChameleonNetwork.setup()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="vcpsdk.html#sdk-plugins-for-mdx-extension-vcpsdk-plugins-mdx-ext">2.19. SDK plugins for mdx extension (vcpsdk/plugins/mdx_ext)</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="vcplib.html">3. VCP LIB</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="vcplib.html#vc-contoller-rest-apivcnode">3.1. VC Contoller REST APIアクセス用下位レベルライブラリのうち、VcNode操作系</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="vcplib.html#vcplib.occtr.VcNode"><code class="docutils literal notranslate"><span class="pre">VcNode</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="vcplib.html#vcplib.occtr.VcNode.add_publickey"><code class="docutils literal notranslate"><span class="pre">VcNode.add_publickey()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcplib.html#vcplib.occtr.VcNode.backup"><code class="docutils literal notranslate"><span class="pre">VcNode.backup()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcplib.html#vcplib.occtr.VcNode.config"><code class="docutils literal notranslate"><span class="pre">VcNode.config()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcplib.html#vcplib.occtr.VcNode.delete"><code class="docutils literal notranslate"><span class="pre">VcNode.delete()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcplib.html#vcplib.occtr.VcNode.docker_cp"><code class="docutils literal notranslate"><span class="pre">VcNode.docker_cp()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcplib.html#vcplib.occtr.VcNode.docker_exec"><code class="docutils literal notranslate"><span class="pre">VcNode.docker_exec()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcplib.html#vcplib.occtr.VcNode.docker_image_inspect"><code class="docutils literal notranslate"><span class="pre">VcNode.docker_image_inspect()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcplib.html#vcplib.occtr.VcNode.docker_image_ls"><code class="docutils literal notranslate"><span class="pre">VcNode.docker_image_ls()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcplib.html#vcplib.occtr.VcNode.docker_image_rm"><code class="docutils literal notranslate"><span class="pre">VcNode.docker_image_rm()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcplib.html#vcplib.occtr.VcNode.docker_image_tag"><code class="docutils literal notranslate"><span class="pre">VcNode.docker_image_tag()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcplib.html#vcplib.occtr.VcNode.docker_info"><code class="docutils literal notranslate"><span class="pre">VcNode.docker_info()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcplib.html#vcplib.occtr.VcNode.docker_inspect"><code class="docutils literal notranslate"><span class="pre">VcNode.docker_inspect()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcplib.html#vcplib.occtr.VcNode.docker_logs"><code class="docutils literal notranslate"><span class="pre">VcNode.docker_logs()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcplib.html#vcplib.occtr.VcNode.docker_network_inspect"><code class="docutils literal notranslate"><span class="pre">VcNode.docker_network_inspect()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcplib.html#vcplib.occtr.VcNode.docker_network_ls"><code class="docutils literal notranslate"><span class="pre">VcNode.docker_network_ls()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcplib.html#vcplib.occtr.VcNode.docker_ps"><code class="docutils literal notranslate"><span class="pre">VcNode.docker_ps()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcplib.html#vcplib.occtr.VcNode.docker_pull"><code class="docutils literal notranslate"><span class="pre">VcNode.docker_pull()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcplib.html#vcplib.occtr.VcNode.docker_push"><code class="docutils literal notranslate"><span class="pre">VcNode.docker_push()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcplib.html#vcplib.occtr.VcNode.docker_restart"><code class="docutils literal notranslate"><span class="pre">VcNode.docker_restart()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcplib.html#vcplib.occtr.VcNode.docker_rm"><code class="docutils literal notranslate"><span class="pre">VcNode.docker_rm()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcplib.html#vcplib.occtr.VcNode.docker_run"><code class="docutils literal notranslate"><span class="pre">VcNode.docker_run()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcplib.html#vcplib.occtr.VcNode.docker_start"><code class="docutils literal notranslate"><span class="pre">VcNode.docker_start()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcplib.html#vcplib.occtr.VcNode.docker_stop"><code class="docutils literal notranslate"><span class="pre">VcNode.docker_stop()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcplib.html#vcplib.occtr.VcNode.docker_volume_inspect"><code class="docutils literal notranslate"><span class="pre">VcNode.docker_volume_inspect()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcplib.html#vcplib.occtr.VcNode.docker_volume_ls"><code class="docutils literal notranslate"><span class="pre">VcNode.docker_volume_ls()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcplib.html#vcplib.occtr.VcNode.power_off"><code class="docutils literal notranslate"><span class="pre">VcNode.power_off()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcplib.html#vcplib.occtr.VcNode.power_on"><code class="docutils literal notranslate"><span class="pre">VcNode.power_on()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcplib.html#vcplib.occtr.VcNode.resume"><code class="docutils literal notranslate"><span class="pre">VcNode.resume()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcplib.html#vcplib.occtr.VcNode.scp"><code class="docutils literal notranslate"><span class="pre">VcNode.scp()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcplib.html#vcplib.occtr.VcNode.ssh_exec"><code class="docutils literal notranslate"><span class="pre">VcNode.ssh_exec()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcplib.html#vcplib.occtr.VcNode.start"><code class="docutils literal notranslate"><span class="pre">VcNode.start()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcplib.html#vcplib.occtr.VcNode.stop"><code class="docutils literal notranslate"><span class="pre">VcNode.stop()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcplib.html#vcplib.occtr.VcNode.suspend"><code class="docutils literal notranslate"><span class="pre">VcNode.suspend()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcplib.html#vcplib.occtr.VcNode.unwatch"><code class="docutils literal notranslate"><span class="pre">VcNode.unwatch()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="vcplib.html#vcplib.occtr.VcNode.watch"><code class="docutils literal notranslate"><span class="pre">VcNode.watch()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, NII.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

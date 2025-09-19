@@ -1,0 +1,13 @@
+:orphan:
+
+VCP LIB
+========================================================
+
+VC Contoller REST APIアクセス用下位レベルライブラリのうち、VcNode操作系
+-----------------------------------------------------------------------
+
+.. autoclass:: vcplib.occtr.VcNode
+    :members:
+    :exclude-members: _docker_output2df, error, local_exec, setup_property
+
+
