@@ -1,8 +1,0 @@
-:orphan:
-
-Mdx Client
-============
-
-.. autoclass:: vcpsdk.plugins.mdx_ext.MdxResourceExt
-    :members:
-    :undoc-members:
