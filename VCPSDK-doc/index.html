@@ -7,18 +7,18 @@
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>VCP ドキュメント</title>
-      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
-      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
-      <link rel="stylesheet" type="text/css" href="_static/css/custom.css?v=9367d857" />
+      <link rel="stylesheet" type="text/css" href="static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="static/css/custom.css?v=9367d857" />
 
   
-      <script src="_static/jquery.js?v=5d32c60e"></script>
-      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="_static/documentation_options.js?v=5fbe7016"></script>
-      <script src="_static/doctools.js?v=9bcbadda"></script>
-      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
-      <script src="_static/translations.js?v=4755f45a"></script>
-    <script src="_static/js/theme.js"></script>
+      <script src="static/jquery.js?v=5d32c60e"></script>
+      <script src="static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="static/documentation_options.js?v=5fbe7016"></script>
+      <script src="static/doctools.js?v=9bcbadda"></script>
+      <script src="static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="static/translations.js?v=4755f45a"></script>
+    <script src="static/js/theme.js"></script>
     <link rel="index" title="索引" href="genindex.html" />
     <link rel="search" title="検索" href="search.html" /> 
 </head>
@@ -94,7 +94,7 @@
 <section id="vcp">
 <h3><span class="section-number">1.2. </span>VCP による仮想システム環境の基本的な構成要素<a class="headerlink" href="#vcp" title="Link to this heading"></a></h3>
 <p>VCP SDK が扱う仮想システム環境は、以下の構成要素を持つ。</p>
-<a class="reference internal image-reference" href="_images/vcp_structure.png"><img alt="_images/vcp_structure.png" class="align-center" src="_images/vcp_structure.png" style="width: 547.0px; height: 421.0px;" />
+<a class="reference internal image-reference" href="images/vcp_structure.png"><img alt="images/vcp_structure.png" class="align-center" src="images/vcp_structure.png" style="width: 547.0px; height: 421.0px;" />
 </a>
 <ul class="simple">
 <li><p>Virtual Cloud (VC)
@@ -114,13 +114,13 @@
 <section id="unitgroup">
 <h3><span class="section-number">1.3. </span>UnitGroup の状態定義<a class="headerlink" href="#unitgroup" title="Link to this heading"></a></h3>
 <p>UnitGroup は、その管理下にある Unit と Node の状態により、以下の状態遷移を持つ。</p>
-<a class="reference internal image-reference" href="_images/vc_state.png"><img alt="_images/vc_state.png" class="align-center" src="_images/vc_state.png" style="width: 300.0px; height: 110.0px;" />
+<a class="reference internal image-reference" href="images/vc_state.png"><img alt="images/vc_state.png" class="align-center" src="images/vc_state.png" style="width: 300.0px; height: 110.0px;" />
 </a>
 </section>
 <section id="node">
 <h3><span class="section-number">1.4. </span>Node の状態定義<a class="headerlink" href="#node" title="Link to this heading"></a></h3>
 <p>Node は、クラウド環境の VM/BM の起動状態やネットワーク接続状況により、以下の状態遷移を持つ。</p>
-<a class="reference internal image-reference" href="_images/node_state.png"><img alt="_images/node_state.png" class="align-center" src="_images/node_state.png" style="width: 395.0px; height: 351.0px;" />
+<a class="reference internal image-reference" href="images/node_state.png"><img alt="images/node_state.png" class="align-center" src="images/node_state.png" style="width: 395.0px; height: 351.0px;" />
 </a>
 </section>
 <section id="id2">
@@ -394,7 +394,7 @@ VCP SDK の flavor を定義して設定するか、または項目ごとに値�
 </pre></div>
 </div>
 <p>VCP SDK <cite>VCPSDK::df_flavors()</cite> を利用して、内容を確認することができる。</p>
-<a class="reference internal image-reference" href="_images/df_flavor.png"><img alt="_images/df_flavor.png" class="align-center" src="_images/df_flavor.png" style="width: 378.0px; height: 171.0px;" />
+<a class="reference internal image-reference" href="images/df_flavor.png"><img alt="images/df_flavor.png" class="align-center" src="images/df_flavor.png" style="width: 378.0px; height: 171.0px;" />
 </a>
 <div style="page-break-before:always"></div></section>
 </section>
@@ -471,7 +471,7 @@ VCP SDK の flavor を定義して設定するか、または項目ごとに値�
 </pre></div>
 </div>
 <p><cite>df_ugroups()</cite> の例</p>
-<a class="reference internal image-reference" href="_images/df_ugroup.png"><img alt="_images/df_ugroup.png" class="align-left" src="_images/df_ugroup.png" style="width: 838.0px; height: 204.0px;" />
+<a class="reference internal image-reference" href="images/df_ugroup.png"><img alt="images/df_ugroup.png" class="align-left" src="images/df_ugroup.png" style="width: 838.0px; height: 204.0px;" />
 </a>
 </section>
 <section id="unit-node">
@@ -490,7 +490,7 @@ VCP SDK の flavor を定義して設定するか、または項目ごとに値�
 </div>
 <p>pandasのDataFrame形式で出力する方法は、以下の通り。</p>
 <p><cite>df_units()</cite> の例</p>
-<a class="reference internal image-reference" href="_images/df_units.png"><img alt="_images/df_units.png" class="align-left" src="_images/df_units.png" style="width: 642.0px; height: 128.0px;" />
+<a class="reference internal image-reference" href="images/df_units.png"><img alt="images/df_units.png" class="align-left" src="images/df_units.png" style="width: 642.0px; height: 128.0px;" />
 </a>
 <p><cite>df_nodes()</cite> の例</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># VCコントローラー全体(所有UnitGroup内のみ)</span>
@@ -504,7 +504,7 @@ VCP SDK の flavor を定義して設定するか、または項目ごとに値�
 </pre></div>
 </div>
 <p><cite>df_nodes()</cite> のdisk例</p>
-<a class="reference internal image-reference" href="_images/df_nodes.png"><img alt="_images/df_nodes.png" class="align-left" src="_images/df_nodes.png" style="width: 740.0px; height: 202.0px;" />
+<a class="reference internal image-reference" href="images/df_nodes.png"><img alt="images/df_nodes.png" class="align-left" src="images/df_nodes.png" style="width: 740.0px; height: 202.0px;" />
 </a>
 <p>もし、設定などの問題で起動に失敗していた場合、Unit を削除する。</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">ugroup</span><span class="o">.</span><span class="n">delete_units</span><span class="p">(</span><span class="s1">&#39;Unit名&#39;</span><span class="p">,</span> <span class="n">force</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -659,7 +659,7 @@ VCP SDK の flavor を定義して設定するか、または項目ごとに値�
 <ul class="simple">
 <li><p>ネットワーク予約</p></li>
 </ul>
-<a class="reference internal image-reference" href="_images/chameleon_flow.png"><img alt="_images/chameleon_flow.png" class="align-center" src="_images/chameleon_flow.png" style="width: 422.0px; height: 594.0px;" />
+<a class="reference internal image-reference" href="images/chameleon_flow.png"><img alt="images/chameleon_flow.png" class="align-center" src="images/chameleon_flow.png" style="width: 422.0px; height: 594.0px;" />
 </a>
 <p>Chameleon Cloud 上で VC ノードを起動するためのサンプルコードを示す。</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">common</span><span class="w"> </span><span class="kn">import</span> <span class="n">logsetting</span>
@@ -880,7 +880,7 @@ VCP SDK の flavor を定義して設定するか、または項目ごとに値�
 <h4><span class="section-number">1.7.1. </span>JupyterNotebookからVCコントローラに直接接続できないネットワーク構成の場合対応<a class="headerlink" href="#jupyternotebookvc" title="Link to this heading"></a></h4>
 <p>例えば、下図のようにJupyterNotebookがサービスネットワーク外で、DNAT経由でVCコントローラにアクセスする場合は、
 以下の項目を設定して対応できる。</p>
-<a class="reference internal image-reference" href="_images/vcc_setting.png"><img alt="_images/vcc_setting.png" class="align-center" src="_images/vcc_setting.png" style="width: 524.8000000000001px; height: 254.4px;" />
+<a class="reference internal image-reference" href="images/vcc_setting.png"><img alt="images/vcc_setting.png" class="align-center" src="images/vcc_setting.png" style="width: 524.8000000000001px; height: 254.4px;" />
 </a>
 <ul class="simple">
 <li><p>insecure_request_warning: VCコントローラアクセス時のSSL証明書のエラー対応(True: エラー回避)</p></li>
@@ -5190,7 +5190,7 @@ power_on=Falseの場合、Trueを指定しても無効。</p></li>
 </tbody>
 </table>
 <p>参考 Azure のBlob Storageのモデル</p>
-<p><img alt="image1" src="_images/blob1.png" /></p>
+<p><img alt="image1" src="images/blob1.png" /></p>
 </section>
 <section id="id2">
 <h3><span class="section-number">4.3. </span>機能概要<a class="headerlink" href="#id2" title="Link to this heading"></a></h3>
