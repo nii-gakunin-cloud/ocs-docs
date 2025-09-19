@@ -1,0 +1,9 @@
+============================
+mdx REST Client for Python
+============================
+
+.. toctree::
+   :maxdepth: 4
+   :caption: Contents:
+
+   vcpsdk
