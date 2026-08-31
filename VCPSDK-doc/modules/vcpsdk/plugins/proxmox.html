@@ -1,0 +1,377 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="ja" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>vcpsdk.plugins.proxmox &mdash; VCP  ドキュメント</title>
+      <link rel="stylesheet" type="text/css" href="../../../static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../../../static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../static/css/custom.css?v=9367d857" />
+
+  
+      <script src="../../../static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../static/documentation_options.js?v=c033477b"></script>
+      <script src="../../../static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../../../static/translations.js?v=4755f45a"></script>
+    <script src="../../../static/js/theme.js"></script>
+    <link rel="index" title="索引" href="../../../genindex.html" />
+    <link rel="search" title="検索" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            VCP
+          </a>
+              <div class="version">
+                25.10.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">目次:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../contents/vcpsdk_man.html">1. VCP SDK の機能仕様とシステム設計について</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../contents/vcpsdk.html">2. VCP SDK</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../contents/vcplib.html">3. VCP LIB</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../contents/vcpcli.html">4. VCP CLI操作説明書</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">VCP</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">モジュールコード</a></li>
+      <li class="breadcrumb-item active">vcpsdk.plugins.proxmox</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>vcpsdk.plugins.proxmox のソースコード</h1><div class="highlight"><pre>
+<span></span><span class="c1">#</span>
+<span class="c1"># Proxmox</span>
+<span class="c1">#</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">vcpsdk.plugins.spec</span><span class="w"> </span><span class="kn">import</span> <span class="n">VcpSpecResource</span>
+
+<span class="n">CCI_VERSION</span> <span class="o">=</span> <span class="s2">&quot;1.0&quot;</span>
+<span class="n">BUILD_VERSION</span> <span class="o">=</span> <span class="s2">&quot;20251001&quot;</span>
+
+
+<div class="viewcode-block" id="VcpSpecResourceProxmox">
+<a class="viewcode-back" href="../../../contents/vcpsdk.html#vcpsdk.plugins.proxmox.VcpSpecResourceProxmox">[ドキュメント]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">VcpSpecResourceProxmox</span><span class="p">(</span><span class="n">VcpSpecResource</span><span class="p">):</span>
+
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    サンプルコード</span>
+
+<span class="sd">.. code-block:: python</span>
+
+<span class="sd">    spec = sdk.get_spec(&quot;proxmox&quot;, &quot;small&quot;)</span>
+<span class="sd">    #</span>
+<span class="sd">    # 変更できること</span>
+<span class="sd">    #</span>
+<span class="sd">    # spec.num_nodes = 1</span>
+<span class="sd">    # spec.params_v = [&#39;/opt:/opt&#39;]</span>
+<span class="sd">    # spec.params_e = [&#39;USER_NAME=test&#39;]</span>
+<span class="sd">    # spec.ip_addresses = [&#39;起動するnodeの静的なIPアドレス&#39;]</span>
+
+<span class="sd">    # Proxmox 依存</span>
+<span class="sd">    #   https://search.opentofu.org/provider/telmate/proxmox/latest/docs/resources/vm_qemu</span>
+<span class="sd">    # spec.num_cpus = 2</span>
+<span class="sd">    # spec.memory = 2048 # MB</span>
+<span class="sd">    # spec.disk_size = 40</span>
+<span class="sd">    # spec.user_name = &quot;testuser&quot;</span>
+<span class="sd">    # spec.mac_addresses = &quot;BC:24:11:B2:A1:01&quot;</span>
+
+<span class="sd">    # クラウドイメージ(テンプレートとするVMWareの仮想マシンの名前)</span>
+<span class="sd">    # spec.cloud_image = &#39;vmtemplate01&#39;</span>
+
+<span class="sd">    # base containerにssh loginするためのssh公開鍵情報を設定</span>
+<span class="sd">    spec.set_ssh_pubkey(&#39;tmp/id_rsa.pub&#39;)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">version</span> <span class="o">=</span> <span class="n">CCI_VERSION</span> <span class="o">+</span> <span class="s2">&quot;+&quot;</span> <span class="o">+</span> <span class="n">BUILD_VERSION</span>
+    <span class="n">vcp_config_key</span> <span class="o">=</span> <span class="s2">&quot;proxmox&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">provider_name</span><span class="p">,</span> <span class="n">flavor</span><span class="p">,</span> <span class="n">config_dir</span><span class="p">):</span>
+
+        <span class="c1"># flavor から spec を設定</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">provider_name</span><span class="p">,</span> <span class="n">flavor</span><span class="p">,</span> <span class="n">config_dir</span><span class="p">)</span>
+
+        <span class="c1"># spec attributes名の設定チェックの回避</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="s2">&quot;proxmox_cci_&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+        <span class="c1"># credentail情報は、vcp_config から設定</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">proxmox_cci_</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;cci_version&quot;</span><span class="p">:</span> <span class="n">CCI_VERSION</span><span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">proxmox_cci_</span><span class="p">[</span><span class="s2">&quot;token_id&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">vcp_config_</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">vcp_config_key</span><span class="p">][</span><span class="s2">&quot;token_id&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">proxmox_cci_</span><span class="p">[</span><span class="s2">&quot;token_secret&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">vcp_config_</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">vcp_config_key</span><span class="p">][</span><span class="s2">&quot;token_secret&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">unit_cci_</span><span class="p">[</span><span class="s2">&quot;private_network&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">vcp_config_</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">vcp_config_key</span><span class="p">][</span>
+            <span class="s2">&quot;private_network&quot;</span>
+        <span class="p">]</span>  <span class="c1"># VPNネットワーク名</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">proxmox_cci_</span><span class="p">[</span><span class="s2">&quot;user_name&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">vcp_config_</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">vcp_config_key</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;user_name&#39;</span><span class="p">,</span> <span class="s1">&#39;ubuntu&#39;</span><span class="p">)</span>
+
+        <span class="c1"># flavorから初期化</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">proxmox_cci_</span><span class="p">[</span><span class="s2">&quot;num_cpus&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">flavor_</span><span class="p">[</span><span class="s2">&quot;num_cpus&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">proxmox_cci_</span><span class="p">[</span><span class="s2">&quot;memory&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">flavor_</span><span class="p">[</span><span class="s2">&quot;memory&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">proxmox_cci_</span><span class="p">[</span><span class="s2">&quot;disk_size&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">flavor_</span><span class="p">[</span><span class="s2">&quot;disk_size&quot;</span><span class="p">]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">proxmox_cci_</span><span class="p">[</span><span class="s2">&quot;cloud_image&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;default&quot;</span>
+
+        <span class="c1"># 初期化</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">proxmox_cci_</span><span class="p">[</span><span class="s2">&quot;ip_address_list&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">proxmox_cci_</span><span class="p">[</span><span class="s2">&quot;mac_address_list&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">text</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">========================</span>
+<span class="si">{provider_name}</span>
+<span class="s2">------------------------</span>
+<span class="si">{unit_info}</span><span class="s2">&quot;&quot;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="n">provider_name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">unit_cci_</span><span class="p">[</span><span class="s2">&quot;cloud_provider&quot;</span><span class="p">],</span> <span class="n">unit_info</span><span class="o">=</span><span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__str__</span><span class="p">()</span>
+        <span class="p">)</span>
+
+        <span class="n">text</span> <span class="o">+=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">    num_cpus: </span><span class="si">{num_cpus}</span>
+<span class="s2">    memory: </span><span class="si">{memory}</span>
+<span class="s2">    disk_size: </span><span class="si">{disk_size}</span>
+<span class="s2">    cloud_image: </span><span class="si">{cloud_image}</span><span class="s2">&quot;&quot;&quot;</span><span class="o">.</span><span class="n">format_map</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">proxmox_cci_</span>
+        <span class="p">)</span>
+        <span class="n">text</span> <span class="o">+=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">    tags: </span><span class="si">{}</span>
+<span class="s2">========================&quot;&quot;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">tags_cci_</span>
+        <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">text</span>
+
+<div class="viewcode-block" id="VcpSpecResourceProxmox.cci">
+<a class="viewcode-back" href="../../../contents/vcpsdk.html#vcpsdk.plugins.proxmox.VcpSpecResourceProxmox.cci">[ドキュメント]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">cci</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        CCI生成</span>
+
+<span class="sd">        :param name: unit名</span>
+
+<span class="sd">        :return: CCI文字列</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># cloud parameter 情報</span>
+        <span class="n">my_cci</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">cci</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+
+        <span class="c1"># yaml schema check</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cci_schema_</span><span class="o">.</span><span class="n">validate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">proxmox_cci_</span><span class="p">,</span> <span class="s2">&quot;proxmox&quot;</span><span class="p">)</span>
+
+        <span class="c1"># cloud_params</span>
+        <span class="n">my_cci</span> <span class="o">+=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">    cloud_provider: proxmox</span>
+<span class="s2">    cloud_params:</span>
+<span class="s2">        cci_version: &quot;</span><span class="si">{cci_version}</span><span class="s2">&quot;</span>
+<span class="s2">        num_cpus: </span><span class="si">{num_cpus}</span>
+<span class="s2">        disk_size: </span><span class="si">{disk_size}</span>
+<span class="s2">        memory: </span><span class="si">{memory}</span>
+<span class="s2">        cloud_image: </span><span class="si">{cloud_image}</span>
+<span class="s2">        ip_address_list: </span><span class="si">{ip_address_list}</span>
+<span class="s2">        mac_address_list: </span><span class="si">{mac_address_list}</span>
+<span class="s2">        token_id: &quot;</span><span class="si">{token_id}</span><span class="s2">&quot;</span>
+<span class="s2">        token_secret: &quot;</span><span class="si">{token_secret}</span><span class="s2">&quot;</span>
+<span class="s2">        user_name: </span><span class="si">{user_name}</span>
+<span class="s2">&quot;&quot;&quot;</span><span class="o">.</span><span class="n">format_map</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">proxmox_cci_</span>
+        <span class="p">)</span>
+        <span class="n">my_cci</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cci_tags</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="n">my_cci</span></div>
+
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">user_name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        onpremisesに依存する ssh login名</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">proxmox_cci_</span><span class="p">[</span><span class="s2">&quot;user_name&quot;</span><span class="p">]</span>
+
+    <span class="nd">@user_name</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">user_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">proxmox_cci_</span><span class="p">[</span><span class="s2">&quot;user_name&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">num_cpus</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Proxmoxに依存するnum_cpus</span>
+
+<span class="sd">        .. note::</span>
+<span class="sd">            * VCP SDK flavorで設定可能</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">proxmox_cci_</span><span class="p">[</span><span class="s2">&quot;num_cpus&quot;</span><span class="p">]</span>
+
+    <span class="nd">@num_cpus</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">num_cpus</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">proxmox_cci_</span><span class="p">[</span><span class="s2">&quot;num_cpus&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">memory</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Proxmoxに依存するmemory</span>
+
+<span class="sd">        .. note::</span>
+<span class="sd">            * VCP SDK flavorで設定可能</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">proxmox_cci_</span><span class="p">[</span><span class="s2">&quot;memory&quot;</span><span class="p">]</span>
+
+    <span class="nd">@memory</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">memory</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">proxmox_cci_</span><span class="p">[</span><span class="s2">&quot;memory&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">disk_size</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Proxmoxに依存するdisk_size (単位:GB)</span>
+
+<span class="sd">        .. note::</span>
+<span class="sd">            * VCP SDK flavorで設定可能</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">proxmox_cci_</span><span class="p">[</span><span class="s2">&quot;disk_size&quot;</span><span class="p">]</span>
+
+    <span class="nd">@disk_size</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">disk_size</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">proxmox_cci_</span><span class="p">[</span><span class="s2">&quot;disk_size&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">ip_addresses</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        静的ip_address_list</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">proxmox_cci_</span><span class="p">[</span><span class="s2">&quot;ip_address_list&quot;</span><span class="p">]</span>
+
+    <span class="nd">@ip_addresses</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">ip_addresses</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        静的ip_address_list</span>
+
+<span class="sd">        .. note::</span>
+<span class="sd">            `num_nodes`と`ip_addresses`が両方セットされた場合、num_nodesは、指定したアドレスの数になる。</span>
+<span class="sd">            また、mac_address_listと同時に設定された場合、両者の数が同じでなければならない。</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="mi">0</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">v</span><span class="p">):</span>
+            <span class="c1"># アドレスの指定がある場合、num_nodesはアドレスの数になる</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">unit_cci_</span><span class="p">[</span><span class="s2">&quot;num_nodes&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">proxmox_cci_</span><span class="p">[</span><span class="s2">&quot;ip_address_list&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">mac_addresses</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        mac_address_list</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">proxmox_cci_</span><span class="p">[</span><span class="s2">&quot;mac_address_list&quot;</span><span class="p">]</span>
+
+    <span class="nd">@mac_addresses</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">mac_addresses</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        mac_address_list</span>
+<span class="sd">        .. note::</span>
+<span class="sd">            `num_nodes`と`mac_address_list`が両方セットされた場合、num_nodesは、指定したアドレスの数になる。</span>
+<span class="sd">            また、ip_addressesと同時に設定された場合、両者の数が同じでなければならない。</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="mi">0</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">v</span><span class="p">):</span>
+            <span class="k">if</span> <span class="mi">0</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">proxmox_cci_</span><span class="p">[</span><span class="s2">&quot;ip_address_list&quot;</span><span class="p">])</span> <span class="ow">and</span> \
+                    <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">proxmox_cci_</span><span class="p">[</span><span class="s2">&quot;ip_address_list&quot;</span><span class="p">])</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">v</span><span class="p">):</span>
+
+                <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s2">&quot;Count of addressses is not match, ip_addresses=</span><span class="si">{}</span><span class="s2"> and mac_address_list=</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">proxmox_cci_</span><span class="p">[</span><span class="s2">&quot;ip_address_list&quot;</span><span class="p">]),</span> <span class="nb">len</span><span class="p">(</span><span class="n">v</span><span class="p">)))</span>
+
+            <span class="c1"># アドレスの指定がある場合、num_nodesはアドレスの数になる</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">unit_cci_</span><span class="p">[</span><span class="s2">&quot;num_nodes&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">proxmox_cci_</span><span class="p">[</span><span class="s2">&quot;mac_address_list&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
+
+    <span class="c1"># property: cloud_image</span>
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">cloud_image</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Proxmoxに依存するクラウドイメージ(テンプレートとする仮想マシンの名前)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">proxmox_cci_</span><span class="p">[</span><span class="s2">&quot;cloud_image&quot;</span><span class="p">]</span>
+
+    <span class="nd">@cloud_image</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">cloud_image</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">proxmox_cci_</span><span class="p">[</span><span class="s2">&quot;cloud_image&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
+
+    <span class="nd">@VcpSpecResource</span><span class="o">.</span><span class="n">num_nodes</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">num_nodes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        起動するnodeの個数</span>
+
+<span class="sd">        .. note::</span>
+<span class="sd">            `num_nodes` と `ip_addresses` は最後にセットされたほうが有効になる。</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">unit_cci_</span><span class="p">[</span><span class="s2">&quot;num_nodes&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">proxmox_cci_</span><span class="p">[</span><span class="s2">&quot;ip_address_list&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">proxmox_cci_</span><span class="p">[</span><span class="s2">&quot;mac_address_list&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        spec の attributes に不正な値を設定した場合に例外を発生</span>
+<span class="sd">        :param name: attributes名</span>
+<span class="sd">        :param value: 設定値</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s2">&quot;spec resource has no attributes!!  [</span><span class="si">{}</span><span class="s2">]&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="p">))</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, NII.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

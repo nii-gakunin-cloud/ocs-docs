@@ -1,0 +1,1346 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="ja" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>vcpsdk.plugins.mdx_ext &mdash; VCP  ドキュメント</title>
+      <link rel="stylesheet" type="text/css" href="../../../static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../../../static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../static/css/custom.css?v=9367d857" />
+
+  
+      <script src="../../../static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../static/documentation_options.js?v=c033477b"></script>
+      <script src="../../../static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../../../static/translations.js?v=4755f45a"></script>
+    <script src="../../../static/js/theme.js"></script>
+    <link rel="index" title="索引" href="../../../genindex.html" />
+    <link rel="search" title="検索" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            VCP
+          </a>
+              <div class="version">
+                25.10.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">目次:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../contents/vcpsdk_man.html">1. VCP SDK の機能仕様とシステム設計について</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../contents/vcpsdk.html">2. VCP SDK</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../contents/vcplib.html">3. VCP LIB</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../contents/vcpcli.html">4. VCP CLI操作説明書</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">VCP</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">モジュールコード</a></li>
+      <li class="breadcrumb-item active">vcpsdk.plugins.mdx_ext</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>vcpsdk.plugins.mdx_ext のソースコード</h1><div class="highlight"><pre>
+<span></span><span class="c1">#</span>
+<span class="c1"># mdx extension</span>
+<span class="c1">#</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">ipaddress</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">jsonschema</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pexpect</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">.mdx_lib</span><span class="w"> </span><span class="kn">import</span> <span class="n">MdxLib</span><span class="p">,</span> <span class="n">MdxRestException</span><span class="p">,</span> <span class="n">DEFAULT_MDX_ENDPOINT</span>
+
+<span class="n">SLEEP_TIME_SEC</span> <span class="o">=</span> <span class="mi">5</span>
+<span class="n">SLEEP_COUNT</span> <span class="o">=</span> <span class="mi">120</span>
+<span class="n">DEPLOY_VM_SLEEP_COUNT</span> <span class="o">=</span> <span class="mi">240</span>
+<span class="n">DELETABLE_STATE</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;PowerOFF&quot;</span><span class="p">,</span> <span class="s2">&quot;Deallocated&quot;</span><span class="p">]</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+<span class="c1"># project_id, vm_name, os_typeを外した</span>
+<span class="c1"># 通常プロジェクト</span>
+<span class="n">MDX_VM_SPEC_SCHEMA</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;additionalProperties&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;object&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;properties&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;catalog&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;template_name&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;pack_num&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;integer&quot;</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;pack_type&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;enum&quot;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="s2">&quot;cpu&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;gpu&quot;</span>
+            <span class="p">]</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;gpu&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;disk_size&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;integer&quot;</span>  <span class="c1"># GB</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;network_adapters&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;array&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;items&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;object&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;additionalProperties&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+                <span class="s2">&quot;properties&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;adapter_number&quot;</span><span class="p">:</span> <span class="p">{</span>
+                        <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;integer&quot;</span>
+                    <span class="p">},</span>
+                    <span class="s2">&quot;segment&quot;</span><span class="p">:</span> <span class="p">{</span>
+                        <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span>
+                    <span class="p">}</span>
+                <span class="p">}</span>
+            <span class="p">}</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;shared_key&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;storage_network&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;enum&quot;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="s2">&quot;sr-iov&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;pvrdma&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;portgroup&quot;</span><span class="p">,</span>
+            <span class="p">],</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;service_level&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+
+<div class="viewcode-block" id="MdxResourceExt">
+<a class="viewcode-back" href="../../../tmp/vcpsdk/doc_mdx/docker/vcpsdk.html#vcpsdk.plugins.mdx_ext.MdxResourceExt">[ドキュメント]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">MdxResourceExt</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    mdx REST API にアクセスするためのPythonクライアントライブラリ。</span>
+
+<span class="sd">    mdx REST API による仮想マシンの作成、状態取得、ネットワーク設定などの機能を提供する。</span>
+
+<span class="sd">    :param init_token: mdx ユーザポータルから取得した mdx REST API 認証トークン</span>
+<span class="sd">    :param endpoint: mdx REST API エンドポイント URL (オプショナル)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># initの説明</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">init_token</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">endpoint</span><span class="o">=</span><span class="n">DEFAULT_MDX_ENDPOINT</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_mdxlib</span> <span class="o">=</span> <span class="n">MdxLib</span><span class="p">(</span><span class="n">endpoint</span><span class="o">=</span><span class="n">endpoint</span><span class="p">,</span> <span class="n">init_token</span><span class="o">=</span><span class="n">init_token</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_project_id</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_check_project_id</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_project_id</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">MdxRestException</span><span class="p">(</span><span class="s2">&quot;call set_project_id to set target mdx project&quot;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="MdxResourceExt.refresh_token">
+<a class="viewcode-back" href="../../../tmp/vcpsdk/doc_mdx/docker/vcpsdk.html#vcpsdk.plugins.mdx_ext.MdxResourceExt.refresh_token">[ドキュメント]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">refresh_token</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        mdx REST API 認証トークンを更新する</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_mdxlib</span><span class="o">.</span><span class="n">refresh_token</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="MdxResourceExt.set_first_password">
+<a class="viewcode-back" href="../../../tmp/vcpsdk/doc_mdx/docker/vcpsdk.html#vcpsdk.plugins.mdx_ext.MdxResourceExt.set_first_password">[ドキュメント]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_first_password</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">host</span><span class="p">,</span> <span class="n">password</span><span class="p">,</span> <span class="n">ssh_key</span><span class="o">=</span><span class="s1">&#39;~/.ssh/id_ed25519&#39;</span><span class="p">,</span> <span class="n">username</span><span class="o">=</span><span class="s2">&quot;mdxuser&quot;</span><span class="p">):</span>
+
+        <span class="n">ssh_args</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;-o StrictHostKeyChecking=no &quot;</span>
+                    <span class="o">+</span> <span class="s2">&quot;-o UserKnownHostsFile=/dev/null &quot;</span>
+                    <span class="o">+</span> <span class="s2">&quot;-o PreferredAuthentications=publickey&quot;</span><span class="p">)</span>
+        <span class="n">cmd</span> <span class="o">=</span> <span class="s2">&quot;ssh </span><span class="si">{}</span><span class="s2"> -i </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2">@</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">ssh_args</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expanduser</span><span class="p">(</span><span class="n">ssh_key</span><span class="p">),</span> <span class="n">username</span><span class="p">,</span> <span class="n">host</span><span class="p">)</span>
+        <span class="n">conn</span> <span class="o">=</span> <span class="n">pexpect</span><span class="o">.</span><span class="n">spawn</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s1">&#39;utf-8&#39;</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">30</span><span class="p">)</span>
+        <span class="n">conn</span><span class="o">.</span><span class="n">expect</span><span class="p">(</span><span class="s2">&quot;New password: &quot;</span><span class="p">)</span>
+        <span class="n">conn</span><span class="o">.</span><span class="n">sendline</span><span class="p">(</span><span class="n">password</span><span class="p">)</span>
+        <span class="n">conn</span><span class="o">.</span><span class="n">expect</span><span class="p">(</span><span class="s2">&quot;Retype new password: &quot;</span><span class="p">)</span>
+        <span class="n">conn</span><span class="o">.</span><span class="n">sendline</span><span class="p">(</span><span class="n">password</span><span class="p">)</span>
+        <span class="n">conn</span><span class="o">.</span><span class="n">expect</span><span class="p">(</span><span class="s2">&quot;passwd: password updated successfully&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="MdxResourceExt.deploy_vm">
+<a class="viewcode-back" href="../../../tmp/vcpsdk/doc_mdx/docker/vcpsdk.html#vcpsdk.plugins.mdx_ext.MdxResourceExt.deploy_vm">[ドキュメント]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">deploy_vm</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vm_name</span><span class="p">,</span> <span class="n">vm_spec</span><span class="p">,</span> <span class="n">wait_for</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        仮想マシンのデプロイを実行する。wait_forが ``True`` の場合、仮想マシンにIPv4アドレスが付与されるまで待つ。</span>
+
+<span class="sd">        :param vm_name: 仮想マシン名 vmname-`[1-3]` のように指定すると、`vmname-1`,`vmname-2`,`vmname-3`というように、指定した数分仮想マシンを作成する。</span>
+<span class="sd">        :param vm_spec: 仮想マシンの仕様（ハードウェアのカスタマイズ項目）</span>
+
+<span class="sd">        .. code-block:: json</span>
+
+<span class="sd">          {</span>
+<span class="sd">            &quot;catalog&quot;: &quot;カタログID&quot;,</span>
+<span class="sd">            &quot;disk_size&quot;: &quot;仮想ディスクサイズ(GB)&quot;,</span>
+<span class="sd">            &quot;gpu&quot;: &quot;GPU数(数値を文字列で指定)&quot;,</span>
+<span class="sd">            &quot;pack_type&quot;: &quot;パックタイプ(※通常プロジェクトの場合に指定) gpu または cpu を指定&quot;,</span>
+<span class="sd">            &quot;pack_num&quot;: &quot;パック数(※通常プロジェクトの場合に指定)&quot;,</span>
+<span class="sd">            &quot;network_adapters&quot;: [</span>
+<span class="sd">               {</span>
+<span class="sd">                  &quot;adapter_number&quot;: &quot;ネットワーク番号&quot;</span>
+<span class="sd">                  &quot;segment&quot;: &quot;ネットワークセグメントID&quot;</span>
+<span class="sd">               }</span>
+<span class="sd">            ],</span>
+<span class="sd">            &quot;shared_key&quot;: &quot;仮想マシンへのSSH接続用公開鍵の文字列&quot;,</span>
+<span class="sd">            &quot;storage_network&quot;: &quot;ストレージネットワーク&quot;,</span>
+<span class="sd">            &quot;template_name&quot;: &quot;vCenter上の仮想マシンテンプレート名&quot;,</span>
+<span class="sd">          }</span>
+
+<span class="sd">        :param wait_for: 仮想マシンにIPv4アドレスが付与されるまで待つ場合 ``True`` を指定</span>
+<span class="sd">        :returns: 仮想マシン情報。詳細は get_vm_info() を参照のこと。</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="c1"># 専有プロジェクトの場合</span>
+        <span class="c1"># &quot;cpu&quot;: CPU数(※専有プロジェクトの場合に必要)</span>
+        <span class="c1"># &quot;memory&quot;: メモリ量(GB) (※専有プロジェクトの場合に必要)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_project_id</span><span class="p">()</span>
+
+        <span class="n">jsonschema</span><span class="o">.</span><span class="n">validate</span><span class="p">(</span><span class="n">vm_spec</span><span class="p">,</span> <span class="n">MDX_VM_SPEC_SCHEMA</span><span class="p">)</span>
+
+        <span class="c1"># OSタイプ、デプロイ後の起動指定は固定値とする</span>
+        <span class="n">vm_spec</span><span class="p">[</span><span class="s2">&quot;os_type&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;Linux&quot;</span>
+        <span class="n">vm_spec</span><span class="p">[</span><span class="s2">&quot;power_on&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+
+        <span class="n">vm_spec</span><span class="p">[</span><span class="s2">&quot;project&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_project_id</span>
+        <span class="n">vm_spec</span><span class="p">[</span><span class="s2">&quot;vm_name&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">vm_name</span>
+
+        <span class="n">deployed_vm_tasks</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mdxlib</span><span class="o">.</span><span class="n">deploy_vm</span><span class="p">(</span><span class="n">vm_spec</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">wait_for</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">vm_task</span> <span class="ow">in</span> <span class="n">deployed_vm_tasks</span><span class="p">:</span>
+                <span class="n">vm_id</span> <span class="o">=</span> <span class="n">vm_task</span><span class="p">[</span><span class="s1">&#39;object_uuid&#39;</span><span class="p">]</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_wait_until</span><span class="p">(</span><span class="n">vm_id</span><span class="p">,</span> <span class="s2">&quot;PowerON&quot;</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">DEPLOY_VM_SLEEP_COUNT</span><span class="p">):</span>
+                    <span class="n">vm_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mdxlib</span><span class="o">.</span><span class="n">get_vm_info</span><span class="p">(</span><span class="n">vm_id</span><span class="p">)</span>
+                    <span class="n">private_ip_address</span> <span class="o">=</span> <span class="n">vm_info</span><span class="p">[</span><span class="s2">&quot;service_networks&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;ipv4_address&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">private_ip_address</span><span class="p">))</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="n">ipaddress</span><span class="o">.</span><span class="n">ip_address</span><span class="p">(</span><span class="n">private_ip_address</span><span class="p">)</span>
+                        <span class="k">break</span>
+                    <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+                        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">SLEEP_TIME_SEC</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="n">MdxRestException</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{}</span><span class="s2">: timeout: allocate ip address&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">vm_name</span><span class="p">))</span>
+        <span class="n">vm_infos</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">task</span> <span class="ow">in</span> <span class="n">deployed_vm_tasks</span><span class="p">:</span>
+            <span class="n">vm_infos</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_mdxlib</span><span class="o">.</span><span class="n">get_vm_info</span><span class="p">(</span><span class="n">task</span><span class="p">[</span><span class="s1">&#39;object_uuid&#39;</span><span class="p">]))</span>
+        <span class="k">return</span> <span class="n">vm_infos</span></div>
+
+
+<div class="viewcode-block" id="MdxResourceExt.clone_vm">
+<a class="viewcode-back" href="../../../tmp/vcpsdk/doc_mdx/docker/vcpsdk.html#vcpsdk.plugins.mdx_ext.MdxResourceExt.clone_vm">[ドキュメント]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">clone_vm</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">original_vm_name</span><span class="p">,</span> <span class="n">vm_name</span><span class="p">,</span> <span class="n">vm_spec</span><span class="p">,</span> <span class="n">power_on</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">wait_for</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        仮想マシンのクローンを実行する。</span>
+
+<span class="sd">        :param original_vm_name: クローン元仮想マシン名</span>
+<span class="sd">        :param vm_name: 作成した仮想マシンに付与するマシン名</span>
+<span class="sd">        :param vm_spec: 仮想マシンの仕様（ハードウェアのカスタマイズ項目）</span>
+
+<span class="sd">        .. code-block:: json</span>
+
+<span class="sd">          {</span>
+<span class="sd">            &quot;vm_name&quot;: &quot;仮想マシン名&quot;,</span>
+<span class="sd">            &quot;pack_type&quot;: &quot;パックタイプ(※通常プロジェクトの場合に指定) gpu または cpu を指定&quot;,</span>
+<span class="sd">            &quot;pack_num&quot;: &quot;パック数(※通常プロジェクトの場合に指定)&quot;,</span>
+<span class="sd">            &quot;gpu&quot;: &quot;GPU数(数値を文字列で指定)&quot;,</span>
+<span class="sd">            &quot;network_adapters&quot;: [</span>
+<span class="sd">               {</span>
+<span class="sd">                  &quot;adapter_number&quot;: &quot;ネットワーク番号&quot;</span>
+<span class="sd">                  &quot;segment&quot;: &quot;ネットワークセグメントID&quot;</span>
+<span class="sd">               }</span>
+<span class="sd">            ],</span>
+<span class="sd">            &quot;storage_network&quot;: &quot;ストレージネットワーク&quot;</span>
+<span class="sd">          }</span>
+
+<span class="sd">        :param power_on: クローン後起動する場合 ``True`` を指定</span>
+<span class="sd">        :param wait_for: 仮想マシン起動後、仮想マシンにIPv4アドレスが付与されるまで待つ場合 ``True`` を指定</span>
+<span class="sd">          power_on=Falseの場合、Trueを指定しても無効。</span>
+<span class="sd">        :returns: 仮想マシン情報。詳細は get_vm_info() を参照のこと。</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_project_id</span><span class="p">()</span>
+
+        <span class="c1"># OSタイプ指定は固定値とする</span>
+        <span class="n">vm_spec</span><span class="p">[</span><span class="s2">&quot;os_type&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;Linux&quot;</span>
+        <span class="n">vm_spec</span><span class="p">[</span><span class="s2">&quot;project&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_project_id</span>
+        <span class="n">vm_spec</span><span class="p">[</span><span class="s2">&quot;vm_name&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">vm_name</span>
+
+        <span class="n">org_vm_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_find_vm</span><span class="p">(</span><span class="n">original_vm_name</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_mdxlib</span><span class="o">.</span><span class="n">clone_vm</span><span class="p">(</span><span class="n">org_vm_id</span><span class="p">,</span> <span class="n">vm_spec</span><span class="p">)</span>
+        <span class="n">vm_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_find_vm</span><span class="p">(</span><span class="n">vm_name</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">power_on</span><span class="p">:</span>
+            <span class="c1"># クローン完了前に起動しようとすると失敗するので待機する</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_wait_until</span><span class="p">(</span><span class="n">vm_id</span><span class="p">,</span> <span class="s2">&quot;PowerOFF&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_mdxlib</span><span class="o">.</span><span class="n">power_on_vm</span><span class="p">(</span><span class="n">vm_id</span><span class="p">,</span> <span class="n">vm_spec</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;service_level&#39;</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">wait_for</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_wait_until</span><span class="p">(</span><span class="n">vm_id</span><span class="p">,</span> <span class="s2">&quot;PowerON&quot;</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">DEPLOY_VM_SLEEP_COUNT</span><span class="p">):</span>
+                    <span class="n">vm_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mdxlib</span><span class="o">.</span><span class="n">get_vm_info</span><span class="p">(</span><span class="n">vm_id</span><span class="p">)</span>
+                    <span class="n">private_ip_address</span> <span class="o">=</span> <span class="n">vm_info</span><span class="p">[</span><span class="s2">&quot;service_networks&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;ipv4_address&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">private_ip_address</span><span class="p">))</span>
+                    <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$&quot;</span><span class="p">,</span> <span class="n">private_ip_address</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                        <span class="k">break</span>
+                    <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">SLEEP_TIME_SEC</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="n">MdxRestException</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{}</span><span class="s2">: timeout: allocate ip address&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">vm_name</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mdxlib</span><span class="o">.</span><span class="n">get_vm_info</span><span class="p">(</span><span class="n">vm_id</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="MdxResourceExt.destroy_vm">
+<a class="viewcode-back" href="../../../tmp/vcpsdk/doc_mdx/docker/vcpsdk.html#vcpsdk.plugins.mdx_ext.MdxResourceExt.destroy_vm">[ドキュメント]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">destroy_vm</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vm_name</span><span class="p">,</span> <span class="n">wait_for</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        仮想マシンの削除を実行する。事前に仮想マシンを PowerOFF 状態にしておく必要がある。</span>
+
+<span class="sd">        :param vm_name: 仮想マシン名</span>
+<span class="sd">        :param wait_for: 削除完了を待つ場合 ``True`` を指定</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_project_id</span><span class="p">()</span>
+        <span class="n">vm_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_find_vm</span><span class="p">(</span><span class="n">vm_name</span><span class="p">)</span>
+
+        <span class="n">vm_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_vm_info_by_id</span><span class="p">(</span><span class="n">vm_id</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">vm_info</span><span class="p">[</span><span class="s2">&quot;status&quot;</span><span class="p">]</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">DELETABLE_STATE</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">MdxRestException</span><span class="p">(</span>
+                <span class="s2">&quot;mdxext: destroy_vm vm status is not PowerOFF or Deallocated but </span><span class="si">{}</span><span class="s2">, please power_off first&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">vm_info</span><span class="p">[</span><span class="s2">&quot;status&quot;</span><span class="p">]))</span>
+
+        <span class="c1"># TODO: 仮想マシンの事前状態のチェックがmdx rest api側にない?</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_mdxlib</span><span class="o">.</span><span class="n">destroy_vm</span><span class="p">(</span><span class="n">vm_id</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">_i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">SLEEP_COUNT</span><span class="p">):</span>
+            <span class="c1"># 仮想マシン情報から消えるまで待つ</span>
+            <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">SLEEP_TIME_SEC</span><span class="p">)</span>
+            <span class="n">res</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mdxlib</span><span class="o">.</span><span class="n">_call_api</span><span class="p">(</span><span class="s2">&quot;/api/vm/</span><span class="si">{}</span><span class="s2">/&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">vm_id</span><span class="p">),</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;GET&quot;</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{}</span><span class="s2">: destroy_vm status_code </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">vm_name</span><span class="p">,</span> <span class="n">res</span><span class="o">.</span><span class="n">status_code</span><span class="p">,</span> <span class="n">res</span><span class="o">.</span><span class="n">text</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">res</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">404</span><span class="p">:</span>
+                <span class="c1"># 削除完了</span>
+                <span class="k">break</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">MdxRestException</span><span class="p">(</span><span class="s2">&quot;destroy_vm is failed: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">vm_name</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="MdxResourceExt.power_on_vm">
+<a class="viewcode-back" href="../../../tmp/vcpsdk/doc_mdx/docker/vcpsdk.html#vcpsdk.plugins.mdx_ext.MdxResourceExt.power_on_vm">[ドキュメント]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">power_on_vm</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vm_name</span><span class="p">,</span> <span class="n">service_level</span><span class="o">=</span><span class="s2">&quot;spot&quot;</span><span class="p">,</span> <span class="n">wait_for</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        仮想マシンの起動 (PowerON) を実行する。</span>
+
+<span class="sd">        :param vm_name: 仮想マシン名</span>
+<span class="sd">        :param wait_for: 起動の完了を待つ場合 ``True`` を指定</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_project_id</span><span class="p">()</span>
+        <span class="n">vm_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_find_vm</span><span class="p">(</span><span class="n">vm_name</span><span class="p">)</span>
+
+        <span class="n">vm_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_vm_info_by_id</span><span class="p">(</span><span class="n">vm_id</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">vm_info</span><span class="p">[</span><span class="s2">&quot;status&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;PowerON&quot;</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;vm is already power on&quot;</span><span class="p">)</span>
+            <span class="k">return</span>
+        <span class="k">if</span> <span class="n">vm_info</span><span class="p">[</span><span class="s2">&quot;status&quot;</span><span class="p">]</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">DELETABLE_STATE</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">MdxRestException</span><span class="p">(</span>
+                <span class="s2">&quot;mdxext: power_off_vm vm status is not PowerOFF or deallocated but </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                    <span class="n">vm_info</span><span class="p">[</span><span class="s2">&quot;status&quot;</span><span class="p">]))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_mdxlib</span><span class="o">.</span><span class="n">power_on_vm</span><span class="p">(</span><span class="n">vm_id</span><span class="p">,</span> <span class="n">service_level</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">wait_for</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_wait_until</span><span class="p">(</span><span class="n">vm_id</span><span class="p">,</span> <span class="s2">&quot;PowerON&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="MdxResourceExt.power_off_vm">
+<a class="viewcode-back" href="../../../tmp/vcpsdk/doc_mdx/docker/vcpsdk.html#vcpsdk.plugins.mdx_ext.MdxResourceExt.power_off_vm">[ドキュメント]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">power_off_vm</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vm_name</span><span class="p">,</span> <span class="n">wait_for</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        仮想マシンの強制停止 (PowerOFF) を実行する。</span>
+
+<span class="sd">        :param vm_name: 仮想マシン名</span>
+<span class="sd">        :param wait_for: 強制停止の完了を待つ場合 ``True`` を指定</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_project_id</span><span class="p">()</span>
+        <span class="n">vm_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_find_vm</span><span class="p">(</span><span class="n">vm_name</span><span class="p">)</span>
+
+        <span class="n">vm_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_vm_info_by_id</span><span class="p">(</span><span class="n">vm_id</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">vm_info</span><span class="p">[</span><span class="s2">&quot;status&quot;</span><span class="p">]</span> <span class="ow">in</span> <span class="n">DELETABLE_STATE</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;vm is already power off or deallocated&quot;</span><span class="p">)</span>
+            <span class="k">return</span>
+        <span class="k">if</span> <span class="n">vm_info</span><span class="p">[</span><span class="s2">&quot;status&quot;</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;PowerON&quot;</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">MdxRestException</span><span class="p">(</span><span class="s2">&quot;mdxext: power_off_vm vm status is not PowerON but </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">vm_info</span><span class="p">[</span><span class="s2">&quot;status&quot;</span><span class="p">]))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_mdxlib</span><span class="o">.</span><span class="n">power_off_vm</span><span class="p">(</span><span class="n">vm_id</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">wait_for</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_wait_until</span><span class="p">(</span><span class="n">vm_id</span><span class="p">,</span> <span class="s2">&quot;PowerOFF&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="MdxResourceExt.power_shutdown_vm">
+<a class="viewcode-back" href="../../../tmp/vcpsdk/doc_mdx/docker/vcpsdk.html#vcpsdk.plugins.mdx_ext.MdxResourceExt.power_shutdown_vm">[ドキュメント]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">power_shutdown_vm</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vm_name</span><span class="p">,</span> <span class="n">wait_for</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        仮想マシンのゲストOSのシャットダウンを実行する。</span>
+
+<span class="sd">        :param vm_name: 仮想マシン名</span>
+<span class="sd">        :param wait_for: シャットダウンの完了を待つ場合 ``True`` を指定</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_project_id</span><span class="p">()</span>
+        <span class="n">vm_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_find_vm</span><span class="p">(</span><span class="n">vm_name</span><span class="p">)</span>
+
+        <span class="n">vm_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_vm_info_by_id</span><span class="p">(</span><span class="n">vm_id</span><span class="p">)</span>
+        <span class="c1"># 事前条件　PowerOn</span>
+        <span class="k">if</span> <span class="n">vm_info</span><span class="p">[</span><span class="s2">&quot;status&quot;</span><span class="p">]</span> <span class="ow">in</span> <span class="n">DELETABLE_STATE</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;vm is already power off or deallocated&quot;</span><span class="p">)</span>
+            <span class="k">return</span>
+        <span class="k">if</span> <span class="n">vm_info</span><span class="p">[</span><span class="s2">&quot;status&quot;</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;PowerON&quot;</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">MdxRestException</span><span class="p">(</span><span class="s2">&quot;mdxext: power_shutdown_vm vm status is not PowerON but </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">vm_info</span><span class="p">[</span><span class="s2">&quot;status&quot;</span><span class="p">]))</span>
+        <span class="c1"># TODO: 操作履歴IDを返す?</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_mdxlib</span><span class="o">.</span><span class="n">shutdown_vm</span><span class="p">(</span><span class="n">vm_id</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">wait_for</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_wait_until</span><span class="p">(</span><span class="n">vm_id</span><span class="p">,</span> <span class="s2">&quot;PowerOFF&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="MdxResourceExt.reboot_vm">
+<a class="viewcode-back" href="../../../tmp/vcpsdk/doc_mdx/docker/vcpsdk.html#vcpsdk.plugins.mdx_ext.MdxResourceExt.reboot_vm">[ドキュメント]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">reboot_vm</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vm_name</span><span class="p">,</span> <span class="n">wait_for</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        仮想マシンの再起動を実行する。</span>
+
+<span class="sd">        :param vm_name: 仮想マシン名</span>
+<span class="sd">        :param wait_for: 再起動の完了を待つ場合 ``True`` を指定</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># 実行履歴で確認したところ10秒で完了する</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_project_id</span><span class="p">()</span>
+        <span class="n">vm_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_find_vm</span><span class="p">(</span><span class="n">vm_name</span><span class="p">)</span>
+
+        <span class="n">vm_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_vm_info_by_id</span><span class="p">(</span><span class="n">vm_id</span><span class="p">)</span>
+        <span class="c1"># 事前条件　PowerOn</span>
+        <span class="k">if</span> <span class="n">vm_info</span><span class="p">[</span><span class="s2">&quot;status&quot;</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;PowerON&quot;</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">MdxRestException</span><span class="p">(</span><span class="s2">&quot;mdxext: reboot_vm vm status is not PowerON but </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">vm_info</span><span class="p">[</span><span class="s2">&quot;status&quot;</span><span class="p">]))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_mdxlib</span><span class="o">.</span><span class="n">reboot_vm</span><span class="p">(</span><span class="n">vm_id</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">wait_for</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_wait_until</span><span class="p">(</span><span class="n">vm_id</span><span class="p">,</span> <span class="s2">&quot;PowerON&quot;</span><span class="p">)</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_vm_info_by_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vm_id</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mdxlib</span><span class="o">.</span><span class="n">get_vm_info</span><span class="p">(</span><span class="n">vm_id</span><span class="p">)</span>
+
+<div class="viewcode-block" id="MdxResourceExt.get_vm_info">
+<a class="viewcode-back" href="../../../tmp/vcpsdk/doc_mdx/docker/vcpsdk.html#vcpsdk.plugins.mdx_ext.MdxResourceExt.get_vm_info">[ドキュメント]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_vm_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vm_name</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        仮想マシンの詳細情報を取得する</span>
+
+<span class="sd">        :param vm_name: 仮想マシン名</span>
+<span class="sd">        :returns: 以下のような仮想マシン情報</span>
+
+<span class="sd">        .. code-block:: json</span>
+
+<span class="sd">          {</span>
+<span class="sd">            &quot;name&quot;: &quot;仮想マシン名&quot;,</span>
+<span class="sd">            &quot;vm_id&quot;: &quot;仮想マシンID&quot;,</span>
+<span class="sd">            &quot;os_type&quot;: &quot;OSタイプ&quot;,</span>
+<span class="sd">            &quot;status&quot;: &quot;仮想マシンの状態&quot;,</span>
+<span class="sd">            &quot;vmware_tools&quot;: [</span>
+<span class="sd">               {</span>
+<span class="sd">                 &quot;status&quot;: &quot;VMware Tools状態&quot;,</span>
+<span class="sd">                 &quot;version&quot;: &quot;VMware Toolsバージョン&quot;</span>
+<span class="sd">               }</span>
+<span class="sd">            ],</span>
+<span class="sd">            &quot;cpu&quot;: &quot;CPU数&quot;,</span>
+<span class="sd">            &quot;memory&quot;: &quot;メモリ量の文字列表現&quot;,</span>
+<span class="sd">            &quot;gpu&quot;: &quot;GPU数の文字列表現&quot;,</span>
+<span class="sd">            &quot;service_networks&quot;: [</span>
+<span class="sd">              {</span>
+<span class="sd">                &quot;adapter_number&quot;: &quot;ネットワーク番号&quot;,</span>
+<span class="sd">                &quot;ipv4_address&quot;: &quot;IPv4アドレスのリスト&quot;,</span>
+<span class="sd">                &quot;ipv6_address&quot;: &quot;IPv6アドレスのリスト&quot;,</span>
+<span class="sd">                &quot;segment&quot;: &quot;ネットワークセグメント名&quot;</span>
+<span class="sd">              }</span>
+<span class="sd">            ],</span>
+<span class="sd">            &quot;storage_networks&quot;: [</span>
+<span class="sd">              {</span>
+<span class="sd">                &quot;adapter_number&quot;: &quot;ネットワーク番号&quot;,</span>
+<span class="sd">                &quot;ipv4_address&quot;: &quot;IPv4アドレスのリスト&quot;,</span>
+<span class="sd">                &quot;ipv6_address&quot;: &quot;IPv6アドレスのリスト&quot;,</span>
+<span class="sd">                &quot;type&quot;: &quot;ネットワークタイプ&quot;</span>
+<span class="sd">              }</span>
+<span class="sd">            ],</span>
+<span class="sd">            &quot;hard_disks&quot;: [</span>
+<span class="sd">              {</span>
+<span class="sd">                &quot;disk_number&quot;: &quot;仮想ディスク番号&quot;,</span>
+<span class="sd">                &quot;device_key&quot;: &quot;仮想ディスクデバイスキー&quot;,</span>
+<span class="sd">                &quot;capacity&quot;: &quot;仮想ディスクサイズ&quot;,</span>
+<span class="sd">                &quot;datastore&quot;: &quot;データストア名&quot;</span>
+<span class="sd">              }</span>
+<span class="sd">            ],</span>
+<span class="sd">            &quot;dvd_media&quot;: &quot;ゲストOSがマウントしているISOイメージ&quot;,</span>
+<span class="sd">            &quot;vcenter&quot;: &quot;vCenter名&quot;,</span>
+<span class="sd">            &quot;esxi&quot;: &quot;ESXi名&quot;,</span>
+<span class="sd">            &quot;pack_type&quot;: &quot;パックタイプ&quot;,</span>
+<span class="sd">            &quot;pack_num&quot;: &quot;パック数&quot;</span>
+<span class="sd">          }</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_project_id</span><span class="p">()</span>
+        <span class="n">vm_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_vm_id_by_vm_name</span><span class="p">(</span><span class="n">vm_name</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">vm_id</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_vm_info_by_id</span><span class="p">(</span><span class="n">vm_id</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="MdxResourceExt.get_vm_list">
+<a class="viewcode-back" href="../../../tmp/vcpsdk/doc_mdx/docker/vcpsdk.html#vcpsdk.plugins.mdx_ext.MdxResourceExt.get_vm_list">[ドキュメント]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_vm_list</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        プロジェクトに属する仮想マシン情報を取得する</span>
+
+<span class="sd">        :returns: 以下のような、仮想マシン情報のリスト</span>
+
+<span class="sd">        .. code-block:: json</span>
+
+<span class="sd">          [</span>
+<span class="sd">            {</span>
+<span class="sd">              &quot;uuid&quot;: &quot;仮想マシンID&quot;,</span>
+<span class="sd">              &quot;name&quot;: &quot;仮想マシン名&quot;,</span>
+<span class="sd">              &quot;status&quot;: &quot;仮想マシンのステータス&quot;,</span>
+<span class="sd">              &quot;vcenter&quot;: &quot;vCenter名&quot;,</span>
+<span class="sd">              &quot;running_tasks&quot;: &quot;実行中のタスクのリスト&quot;,</span>
+<span class="sd">            }</span>
+<span class="sd">          ]</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_project_id</span><span class="p">()</span>
+        <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">vm_info_iter</span><span class="p">())</span></div>
+
+
+<div class="viewcode-block" id="MdxResourceExt.get_vm_catalogs">
+<a class="viewcode-back" href="../../../tmp/vcpsdk/doc_mdx/docker/vcpsdk.html#vcpsdk.plugins.mdx_ext.MdxResourceExt.get_vm_catalogs">[ドキュメント]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_vm_catalogs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        プロジェクトに紐づいた仮想マシンデプロイカタログ情報を取得する</span>
+
+<span class="sd">        :returns: 以下のような、カタログのリスト</span>
+
+<span class="sd">        .. code-block:: json</span>
+
+<span class="sd">          [</span>
+<span class="sd">            {</span>
+<span class="sd">              &quot;uuid&quot;: &quot;カタログID&quot;,</span>
+<span class="sd">              &quot;name&quot;: &quot;カタログ名&quot;,</span>
+<span class="sd">              &quot;type&quot;: &quot;カタログのタイプ&quot;,</span>
+<span class="sd">              &quot;template_name&quot;: &quot;vCenter上の仮想マシンテンプレート名&quot;,</span>
+<span class="sd">              &quot;os_type&quot;: &quot;OS種別&quot;,</span>
+<span class="sd">              &quot;os_name&quot;: &quot;OS名&quot;,</span>
+<span class="sd">              &quot;os_version&quot;: &quot;OSバージョン&quot;,</span>
+<span class="sd">              &quot;hw_version&quot;: &quot;ハードウェアバージョン&quot;,</span>
+<span class="sd">              &quot;description&quot;: &quot;説明&quot;,</span>
+<span class="sd">              &quot;login_username&quot;: &quot;OSログインユーザ名&quot;</span>
+<span class="sd">            }</span>
+<span class="sd">          ]</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_project_id</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mdxlib</span><span class="o">.</span><span class="n">get_vm_catalogs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_project_id</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="MdxResourceExt.get_vm_history">
+<a class="viewcode-back" href="../../../tmp/vcpsdk/doc_mdx/docker/vcpsdk.html#vcpsdk.plugins.mdx_ext.MdxResourceExt.get_vm_history">[ドキュメント]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_vm_history</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vm_name</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        仮想マシンの操作履歴情報を取得する</span>
+
+<span class="sd">        :param vm_name: 仮想マシン名</span>
+
+<span class="sd">        :returns: 以下のような、仮想マシン操作履歴情報</span>
+
+<span class="sd">        .. code-block:: json</span>
+
+<span class="sd">          [</span>
+<span class="sd">            {</span>
+<span class="sd">                &quot;uuid&quot;: &quot;操作ID&quot;,</span>
+<span class="sd">                &quot;project&quot;: &quot;プロジェクト名&quot;,</span>
+<span class="sd">                &quot;user_name&quot;: &quot;ユーザ名&quot;,</span>
+<span class="sd">                &quot;type&quot;: &quot;操作種別&quot;,</span>
+<span class="sd">                &quot;object_uuid&quot;: &quot;対象ID&quot;,</span>
+<span class="sd">                &quot;object_name&quot;: &quot;対象名&quot;,</span>
+<span class="sd">                &quot;start_datetime&quot;: &quot;開始日時&quot;,</span>
+<span class="sd">                &quot;end_datetime&quot;: &quot;終了日時&quot;,</span>
+<span class="sd">                &quot;status&quot;: &quot;ステータス&quot;,</span>
+<span class="sd">                &quot;progress&quot;: &quot;進捗&quot;,</span>
+<span class="sd">                &quot;error_message&quot;: &quot;エラーメッセージ&quot;,</span>
+<span class="sd">                &quot;error_detail&quot;: &quot;エラー詳細&quot;</span>
+<span class="sd">            }</span>
+<span class="sd">          ]</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_project_id</span><span class="p">()</span>
+        <span class="n">vm_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_vm_id_by_vm_name</span><span class="p">(</span><span class="n">vm_name</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">vm_id</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mdxlib</span><span class="o">.</span><span class="n">get_vm_history</span><span class="p">(</span><span class="n">vm_id</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="MdxResourceExt.get_assigned_projects">
+<a class="viewcode-back" href="../../../tmp/vcpsdk/doc_mdx/docker/vcpsdk.html#vcpsdk.plugins.mdx_ext.MdxResourceExt.get_assigned_projects">[ドキュメント]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_assigned_projects</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        ユーザに紐付いたプロジェクト情報を取得する</span>
+
+<span class="sd">        :returns: 以下のような、プロジェクト情報のリスト</span>
+
+<span class="sd">        .. code-block:: json</span>
+
+<span class="sd">          [</span>
+<span class="sd">            {</span>
+<span class="sd">              &quot;uuid&quot;: &quot;機関ID&quot;,</span>
+<span class="sd">              &quot;name&quot;: &quot;機関名&quot;,</span>
+<span class="sd">              &quot;projects&quot;: [</span>
+<span class="sd">                 {</span>
+<span class="sd">                    &quot;uuid&quot;: &quot;プロジェクトID&quot;,</span>
+<span class="sd">                    &quot;name&quot;: &quot;プロジェクト名&quot;,</span>
+<span class="sd">                    &quot;type&quot;: &quot;プロジェクトのタイプ&quot;,</span>
+<span class="sd">                    &quot;expired&quot;: &quot;プロジェクトの期限が切れたか否か (boolean)&quot;</span>
+<span class="sd">                 }</span>
+<span class="sd">              ]</span>
+<span class="sd">            }</span>
+<span class="sd">          ]</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># _check_project_idは不要</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mdxlib</span><span class="o">.</span><span class="n">get_assigned_projects</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="MdxResourceExt.set_current_project_id">
+<a class="viewcode-back" href="../../../tmp/vcpsdk/doc_mdx/docker/vcpsdk.html#vcpsdk.plugins.mdx_ext.MdxResourceExt.set_current_project_id">[ドキュメント]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_current_project_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">project_id</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        操作対象のmdxのプロジェクトIDを設定する</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_project_id</span> <span class="o">=</span> <span class="n">project_id</span></div>
+
+
+<div class="viewcode-block" id="MdxResourceExt.set_current_project_by_name">
+<a class="viewcode-back" href="../../../tmp/vcpsdk/doc_mdx/docker/vcpsdk.html#vcpsdk.plugins.mdx_ext.MdxResourceExt.set_current_project_by_name">[ドキュメント]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_current_project_by_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">project_name</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        操作対象のmdxのプロジェクトをプロジェクト名で設定する</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">org_list</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mdxlib</span><span class="o">.</span><span class="n">get_assigned_projects</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">org</span> <span class="ow">in</span> <span class="n">org_list</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">proj</span> <span class="ow">in</span> <span class="n">org</span><span class="p">[</span><span class="s2">&quot;projects&quot;</span><span class="p">]:</span>
+                <span class="k">if</span> <span class="n">proj</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">project_name</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_project_id</span> <span class="o">=</span> <span class="n">proj</span><span class="p">[</span><span class="s2">&quot;uuid&quot;</span><span class="p">]</span>
+                    <span class="k">return</span>
+
+        <span class="k">raise</span> <span class="n">MdxRestException</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;mdx_ext: project </span><span class="si">{</span><span class="n">project_name</span><span class="si">}</span><span class="s2"> is not found&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="MdxResourceExt.get_current_project">
+<a class="viewcode-back" href="../../../tmp/vcpsdk/doc_mdx/docker/vcpsdk.html#vcpsdk.plugins.mdx_ext.MdxResourceExt.get_current_project">[ドキュメント]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_current_project</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        操作対象のmdxのプロジェクトの取得</span>
+
+<span class="sd">        :returns: 以下のような、プロジェクト情報</span>
+
+<span class="sd">        .. code-block:: json</span>
+
+<span class="sd">          {</span>
+<span class="sd">             &quot;uuid&quot;: &quot;プロジェクトID&quot;,</span>
+<span class="sd">             &quot;name&quot;: &quot;プロジェクト名&quot;,</span>
+<span class="sd">             &quot;type&quot;: &quot;プロジェクトのタイプ&quot;,</span>
+<span class="sd">             &quot;expired&quot;: &quot;プロジェクトの期限が切れたか否か&quot;</span>
+<span class="sd">          }</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_project_id</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="n">org_list</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mdxlib</span><span class="o">.</span><span class="n">get_assigned_projects</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">org</span> <span class="ow">in</span> <span class="n">org_list</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">proj</span> <span class="ow">in</span> <span class="n">org</span><span class="p">[</span><span class="s2">&quot;projects&quot;</span><span class="p">]:</span>
+                <span class="k">if</span> <span class="n">proj</span><span class="p">[</span><span class="s2">&quot;uuid&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">_project_id</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="n">proj</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+
+    <span class="c1"># network</span>
+<div class="viewcode-block" id="MdxResourceExt.get_allow_acl_ipv4_info">
+<a class="viewcode-back" href="../../../tmp/vcpsdk/doc_mdx/docker/vcpsdk.html#vcpsdk.plugins.mdx_ext.MdxResourceExt.get_allow_acl_ipv4_info">[ドキュメント]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_allow_acl_ipv4_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">segment_id</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Allow ACL IPv4情報の取得</span>
+
+<span class="sd">        :param segment_id: ネットワークセグメントID</span>
+<span class="sd">        :returns: 以下のような、プロジェクトに属するAllow ACL IPv4の情報のリスト</span>
+
+<span class="sd">        .. code-block:: json</span>
+
+<span class="sd">          [</span>
+<span class="sd">            {</span>
+<span class="sd">              &quot;uuid&quot;: &quot;Allow ACL IPv4 ID&quot;,</span>
+<span class="sd">              &quot;src_address&quot;: &quot;Srcアドレス&quot;,</span>
+<span class="sd">              &quot;src_mask&quot;:  &quot;Srcマスク&quot;,</span>
+<span class="sd">              &quot;src_port&quot;: &quot;Srcポート&quot;,</span>
+<span class="sd">              &quot;dst_address&quot;: &quot;Dstアドレス&quot;,</span>
+<span class="sd">              &quot;dst_mask&quot;: &quot;Dstマスク&quot;,</span>
+<span class="sd">              &quot;dst_port&quot;: &quot;Dstポート&quot;,</span>
+<span class="sd">              &quot;protocol&quot;: &quot;プロトコル&quot;</span>
+<span class="sd">            }</span>
+<span class="sd">          ]</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_project_id</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mdxlib</span><span class="o">.</span><span class="n">get_allow_acl_ipv4_info</span><span class="p">(</span><span class="n">segment_id</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="MdxResourceExt.add_allow_acl_ipv4_info">
+<a class="viewcode-back" href="../../../tmp/vcpsdk/doc_mdx/docker/vcpsdk.html#vcpsdk.plugins.mdx_ext.MdxResourceExt.add_allow_acl_ipv4_info">[ドキュメント]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_allow_acl_ipv4_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">allow_acl_spec</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        指定したセグメントにAllow ACL IPv4を追加する</span>
+
+<span class="sd">        :param allow_acl_spec: 以下のような、追加するAllow ACL IPv4の仕様</span>
+
+<span class="sd">        .. code-block:: json</span>
+
+<span class="sd">          {</span>
+<span class="sd">            &quot;segment&quot;: &quot;ネットワークセグメントID&quot;,</span>
+<span class="sd">            &quot;src_address&quot;: &quot;Src IPv4アドレス&quot;,</span>
+<span class="sd">            &quot;src_mask&quot;: &quot;Srcマスク&quot;,</span>
+<span class="sd">            &quot;src_port&quot;: &quot;Srcポート&quot;,</span>
+<span class="sd">            &quot;dst_address&quot;: &quot;Dst IPv4アドレス&quot;,</span>
+<span class="sd">            &quot;dst_mask&quot;: &quot;Dstマスクの文字列表現&quot;,</span>
+<span class="sd">            &quot;dst_port&quot;: &quot;Dstポートの文字列表現&quot;,</span>
+<span class="sd">            &quot;protocol&quot;: &quot;プロトコル&quot;</span>
+<span class="sd">          }</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_project_id</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mdxlib</span><span class="o">.</span><span class="n">add_allow_acl_ipv4_info</span><span class="p">(</span><span class="n">allow_acl_spec</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="MdxResourceExt.edit_allow_acl_ipv4_info">
+<a class="viewcode-back" href="../../../tmp/vcpsdk/doc_mdx/docker/vcpsdk.html#vcpsdk.plugins.mdx_ext.MdxResourceExt.edit_allow_acl_ipv4_info">[ドキュメント]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">edit_allow_acl_ipv4_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">allow_acl_id</span><span class="p">,</span> <span class="n">allow_acl_spec</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        指定したAllow ACL IPv4を編集する</span>
+
+<span class="sd">        :param allow_acl_spec: 以下のような、登録するAllow ACL IPv4の仕様</span>
+
+<span class="sd">        .. code-block:: json</span>
+
+<span class="sd">          {</span>
+<span class="sd">            &quot;src_address&quot;: &quot;Src IPv4アドレス&quot;,</span>
+<span class="sd">            &quot;src_mask&quot;: &quot;Srcマスク&quot;,</span>
+<span class="sd">            &quot;src_port&quot;: &quot;Srcポート&quot;,</span>
+<span class="sd">            &quot;dst_address&quot;: &quot;Dst IPv4アドレス&quot;,</span>
+<span class="sd">            &quot;dst_mask&quot;: &quot;Dstマスクの文字列表現&quot;,</span>
+<span class="sd">            &quot;dst_port&quot;: &quot;Dstポートの文字列表現&quot;,</span>
+<span class="sd">            &quot;protocol&quot;: &quot;プロトコル&quot;</span>
+<span class="sd">          }</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_project_id</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mdxlib</span><span class="o">.</span><span class="n">edit_allow_acl_ipv4_info</span><span class="p">(</span><span class="n">allow_acl_id</span><span class="p">,</span>
+                                                     <span class="n">allow_acl_spec</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="MdxResourceExt.delete_allow_acl_ipv4_info">
+<a class="viewcode-back" href="../../../tmp/vcpsdk/doc_mdx/docker/vcpsdk.html#vcpsdk.plugins.mdx_ext.MdxResourceExt.delete_allow_acl_ipv4_info">[ドキュメント]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">delete_allow_acl_ipv4_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">acl_ipv4_id</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param acl_ipv4_id: 削除対象の Allow ACL IPv4 ID</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_project_id</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_mdxlib</span><span class="o">.</span><span class="n">delete_allow_acl_ipv4_info</span><span class="p">(</span><span class="n">acl_ipv4_id</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="MdxResourceExt.get_allow_acl_ipv6_info">
+<a class="viewcode-back" href="../../../tmp/vcpsdk/doc_mdx/docker/vcpsdk.html#vcpsdk.plugins.mdx_ext.MdxResourceExt.get_allow_acl_ipv6_info">[ドキュメント]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_allow_acl_ipv6_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">segment_id</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Allow ACL IPv6情報の取得</span>
+
+<span class="sd">        :param segment_id: ネットワークセグメントID</span>
+<span class="sd">        :returns: 以下のような、プロジェクトに属するAllow ACL IPv6の情報のリスト</span>
+
+<span class="sd">        .. code-block:: json</span>
+
+<span class="sd">          [</span>
+<span class="sd">            {</span>
+<span class="sd">              &quot;uuid&quot;: &quot;Allow ACL IPv6 ID&quot;,</span>
+<span class="sd">              &quot;src_address&quot;: &quot;Srcアドレス&quot;,</span>
+<span class="sd">              &quot;src_mask&quot;:  &quot;Srcマスク&quot;,</span>
+<span class="sd">              &quot;src_port&quot;: &quot;Srcポート&quot;,</span>
+<span class="sd">              &quot;dst_address&quot;: &quot;Dstアドレス&quot;,</span>
+<span class="sd">              &quot;dst_mask&quot;: &quot;Dstマスク&quot;,</span>
+<span class="sd">              &quot;dst_port&quot;: &quot;Dstポート&quot;,</span>
+<span class="sd">              &quot;protocol&quot;: &quot;プロトコル&quot;</span>
+<span class="sd">            }</span>
+<span class="sd">          ]</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_project_id</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mdxlib</span><span class="o">.</span><span class="n">get_allow_acl_ipv6_info</span><span class="p">(</span><span class="n">segment_id</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="MdxResourceExt.add_allow_acl_ipv6_info">
+<a class="viewcode-back" href="../../../tmp/vcpsdk/doc_mdx/docker/vcpsdk.html#vcpsdk.plugins.mdx_ext.MdxResourceExt.add_allow_acl_ipv6_info">[ドキュメント]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_allow_acl_ipv6_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">allow_acl_spec</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        指定したセグメントにAllow ACL IPv6を追加する</span>
+
+<span class="sd">        :param allow_acl_spec: 以下のような、追加するAllow ACL IPv6の仕様</span>
+
+<span class="sd">        .. code-block:: json</span>
+
+<span class="sd">          {</span>
+<span class="sd">            &quot;segment&quot;: &quot;ネットワークセグメントID&quot;,</span>
+<span class="sd">            &quot;src_address&quot;: &quot;Src IPv6アドレス&quot;,</span>
+<span class="sd">            &quot;src_mask&quot;: &quot;Srcマスク&quot;,</span>
+<span class="sd">            &quot;src_port&quot;: &quot;Srcポート&quot;,</span>
+<span class="sd">            &quot;dst_address&quot;: &quot;Dst IPv6アドレス&quot;,</span>
+<span class="sd">            &quot;dst_mask&quot;: &quot;Dstマスクの文字列表現&quot;,</span>
+<span class="sd">            &quot;dst_port&quot;: &quot;Dstポートの文字列表現&quot;,</span>
+<span class="sd">            &quot;protocol&quot;: &quot;プロトコル&quot;</span>
+<span class="sd">          }</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_project_id</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mdxlib</span><span class="o">.</span><span class="n">add_allow_acl_ipv6_info</span><span class="p">(</span><span class="n">allow_acl_spec</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="MdxResourceExt.edit_allow_acl_ipv6_info">
+<a class="viewcode-back" href="../../../tmp/vcpsdk/doc_mdx/docker/vcpsdk.html#vcpsdk.plugins.mdx_ext.MdxResourceExt.edit_allow_acl_ipv6_info">[ドキュメント]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">edit_allow_acl_ipv6_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">allow_acl_id</span><span class="p">,</span> <span class="n">allow_acl_spec</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        指定したAllow ACL IPv6を編集する</span>
+
+<span class="sd">        :param allow_acl_spec: 以下のような、登録するAllow ACL IPv6の仕様</span>
+
+<span class="sd">        .. code-block:: json</span>
+
+<span class="sd">          {</span>
+<span class="sd">            &quot;src_address&quot;: &quot;Src IPv6アドレス&quot;,</span>
+<span class="sd">            &quot;src_mask&quot;: &quot;Srcマスク&quot;,</span>
+<span class="sd">            &quot;src_port&quot;: &quot;Srcポート&quot;,</span>
+<span class="sd">            &quot;dst_address&quot;: &quot;Dst IPv6アドレス&quot;,</span>
+<span class="sd">            &quot;dst_mask&quot;: &quot;Dstマスクの文字列表現&quot;,</span>
+<span class="sd">            &quot;dst_port&quot;: &quot;Dstポートの文字列表現&quot;,</span>
+<span class="sd">            &quot;protocol&quot;: &quot;プロトコル&quot;</span>
+<span class="sd">          }</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_project_id</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mdxlib</span><span class="o">.</span><span class="n">edit_allow_acl_ipv6_info</span><span class="p">(</span><span class="n">allow_acl_id</span><span class="p">,</span>
+                                                     <span class="n">allow_acl_spec</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="MdxResourceExt.delete_allow_acl_ipv6_info">
+<a class="viewcode-back" href="../../../tmp/vcpsdk/doc_mdx/docker/vcpsdk.html#vcpsdk.plugins.mdx_ext.MdxResourceExt.delete_allow_acl_ipv6_info">[ドキュメント]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">delete_allow_acl_ipv6_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">acl_ipv6_id</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param acl_ipv6_id: 削除対象の Allow ACL IPv6 ID</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_project_id</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_mdxlib</span><span class="o">.</span><span class="n">delete_allow_acl_ipv6_info</span><span class="p">(</span><span class="n">acl_ipv6_id</span><span class="p">)</span></div>
+
+
+    <span class="c1"># project</span>
+<div class="viewcode-block" id="MdxResourceExt.get_project_history">
+<a class="viewcode-back" href="../../../tmp/vcpsdk/doc_mdx/docker/vcpsdk.html#vcpsdk.plugins.mdx_ext.MdxResourceExt.get_project_history">[ドキュメント]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_project_history</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        プロジェクト内における操作履歴の情報を取得する</span>
+
+<span class="sd">        :returns: 以下のような、プロジェクト操作履歴情報のリスト</span>
+
+<span class="sd">        .. code-block:: json</span>
+
+<span class="sd">          [</span>
+<span class="sd">            {</span>
+<span class="sd">              &quot;uuid&quot;: &quot;操作履歴ID&quot;,</span>
+<span class="sd">              &quot;project&quot;: &quot;プロジェクトID&quot;,</span>
+<span class="sd">              &quot;user_name&quot;: &quot;操作ユーザ名&quot;,</span>
+<span class="sd">              &quot;type&quot;: &quot;操作種別&quot;,</span>
+<span class="sd">              &quot;object_uuid&quot;: &quot;操作対象オブジェクトID&quot;,</span>
+<span class="sd">              &quot;object_name&quot;: &quot;操作対象オブジェクト名&quot;,</span>
+<span class="sd">              &quot;start_datetime&quot;: &quot;開始日付 (YYYY-mm-dd HH:MM:SS)&quot;,</span>
+<span class="sd">              &quot;end_datetime&quot;: &quot;終了日付 (YYYY-mm-dd HH:MM:SS)&quot;,</span>
+<span class="sd">              &quot;status&quot;: &quot;ステータス&quot;,</span>
+<span class="sd">              &quot;progress&quot;: &quot;進捗率&quot;,</span>
+<span class="sd">              &quot;error_message&quot;: &quot;エラーメッセージ&quot;,</span>
+<span class="sd">              &quot;error_detail&quot;: &quot;エラー詳細&quot;</span>
+<span class="sd">            }</span>
+<span class="sd">          ]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_project_id</span><span class="p">()</span>
+        <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">project_history_iter</span><span class="p">())</span></div>
+
+
+<div class="viewcode-block" id="MdxResourceExt.vm_info_iter">
+<a class="viewcode-back" href="../../../tmp/vcpsdk/doc_mdx/docker/vcpsdk.html#vcpsdk.plugins.mdx_ext.MdxResourceExt.vm_info_iter">[ドキュメント]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">vm_info_iter</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        仮想マシン一覧をイテレータとして返す。</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># TODO: 公開するか?決める</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_project_id</span><span class="p">()</span>
+        <span class="n">current_page</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">page_size</span> <span class="o">=</span> <span class="mi">100</span>
+        <span class="c1"># ページ番号で制御する(URLではなく)</span>
+        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">vm_list</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mdxlib</span><span class="o">.</span><span class="n">get_vm_list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_project_id</span><span class="p">,</span>
+                                               <span class="n">page</span><span class="o">=</span><span class="n">current_page</span><span class="p">,</span>
+                                               <span class="n">page_size</span><span class="o">=</span><span class="n">page_size</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">vm_info</span> <span class="ow">in</span> <span class="n">vm_list</span><span class="p">[</span><span class="s2">&quot;results&quot;</span><span class="p">]:</span>
+                <span class="k">yield</span> <span class="n">vm_info</span>
+            <span class="c1"># VM情報のロックが必要? (ページをめくる間にVMが増減したらどうするか?)</span>
+            <span class="k">if</span> <span class="n">vm_list</span><span class="p">[</span><span class="s2">&quot;next&quot;</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="c1"># StopIteration is RuntimeError</span>
+                <span class="k">return</span>
+            <span class="n">current_page</span> <span class="o">+=</span> <span class="mi">1</span></div>
+
+
+<div class="viewcode-block" id="MdxResourceExt.project_history_iter">
+<a class="viewcode-back" href="../../../tmp/vcpsdk/doc_mdx/docker/vcpsdk.html#vcpsdk.plugins.mdx_ext.MdxResourceExt.project_history_iter">[ドキュメント]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">project_history_iter</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        プロジェクト操作履歴をイテレータとして返す。</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_project_id</span><span class="p">()</span>
+        <span class="n">current_page</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">page_size</span> <span class="o">=</span> <span class="mi">10000</span>
+        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">history_list</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mdxlib</span><span class="o">.</span><span class="n">get_project_history</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_project_id</span><span class="p">,</span>
+                                                            <span class="n">page</span><span class="o">=</span><span class="n">current_page</span><span class="p">,</span>
+                                                            <span class="n">page_size</span><span class="o">=</span><span class="n">page_size</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">history</span> <span class="ow">in</span> <span class="n">history_list</span><span class="p">[</span><span class="s2">&quot;results&quot;</span><span class="p">]:</span>
+                <span class="k">yield</span> <span class="n">history</span>
+
+            <span class="k">if</span> <span class="n">history_list</span><span class="p">[</span><span class="s2">&quot;next&quot;</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">return</span>
+            <span class="n">current_page</span> <span class="o">+=</span> <span class="mi">1</span></div>
+
+
+<div class="viewcode-block" id="MdxResourceExt.get_assignable_global_ipv4">
+<a class="viewcode-back" href="../../../tmp/vcpsdk/doc_mdx/docker/vcpsdk.html#vcpsdk.plugins.mdx_ext.MdxResourceExt.get_assignable_global_ipv4">[ドキュメント]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_assignable_global_ipv4</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_project_id</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mdxlib</span><span class="o">.</span><span class="n">get_assignable_global_ipv4</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_project_id</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="MdxResourceExt.dnat_iter">
+<a class="viewcode-back" href="../../../tmp/vcpsdk/doc_mdx/docker/vcpsdk.html#vcpsdk.plugins.mdx_ext.MdxResourceExt.dnat_iter">[ドキュメント]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">dnat_iter</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_project_id</span><span class="p">()</span>
+        <span class="n">current_page</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">page_size</span> <span class="o">=</span> <span class="mi">100</span>
+        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">dnat_list</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mdxlib</span><span class="o">.</span><span class="n">get_dnat</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_project_id</span><span class="p">,</span> <span class="n">page</span><span class="o">=</span><span class="n">current_page</span><span class="p">,</span> <span class="n">page_size</span><span class="o">=</span><span class="n">page_size</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">dnat</span> <span class="ow">in</span> <span class="n">dnat_list</span><span class="p">[</span><span class="s2">&quot;results&quot;</span><span class="p">]:</span>
+                <span class="k">yield</span> <span class="n">dnat</span>
+
+            <span class="k">if</span> <span class="n">dnat_list</span><span class="p">[</span><span class="s2">&quot;next&quot;</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">return</span>
+            <span class="n">current_page</span> <span class="o">+=</span> <span class="mi">1</span></div>
+
+
+<div class="viewcode-block" id="MdxResourceExt.get_segments">
+<a class="viewcode-back" href="../../../tmp/vcpsdk/doc_mdx/docker/vcpsdk.html#vcpsdk.plugins.mdx_ext.MdxResourceExt.get_segments">[ドキュメント]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_segments</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        プロジェクトに紐付いたネットワークセグメント情報を取得する。</span>
+
+<span class="sd">        :returns: 以下のような、プロジェクトに紐付いたネットワークセグメント情報のリスト</span>
+
+<span class="sd">        .. code-block:: json</span>
+
+<span class="sd">          [</span>
+<span class="sd">            {</span>
+<span class="sd">              &quot;uuid&quot;: &quot;ネットワークセグメントID&quot;,</span>
+<span class="sd">              &quot;name&quot;: &quot;ネットワークセグメント名&quot;,</span>
+<span class="sd">              &quot;default&quot;: &quot;プロジェクト作成時に作成されるデフォルトのネットワークセグメントか否か&quot;</span>
+<span class="sd">            }</span>
+<span class="sd">          ]</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_project_id</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mdxlib</span><span class="o">.</span><span class="n">get_segments</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_project_id</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="MdxResourceExt.get_segment_summary">
+<a class="viewcode-back" href="../../../tmp/vcpsdk/doc_mdx/docker/vcpsdk.html#vcpsdk.plugins.mdx_ext.MdxResourceExt.get_segment_summary">[ドキュメント]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_segment_summary</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">segment_id</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        ネットワークセグメントのサマリ情報を取得する</span>
+
+<span class="sd">        :param segment_id: ネットワークセグメントID</span>
+<span class="sd">        :returns: 以下のような、ネットワークセグメントのサマリ情報</span>
+
+<span class="sd">        .. code-block:: json</span>
+
+<span class="sd">          {</span>
+<span class="sd">            &quot;vlan_id&quot;: &quot;VLAN ID&quot;,</span>
+<span class="sd">            &quot;vni&quot;: &quot;VNI&quot;,</span>
+<span class="sd">            &quot;ip_range&quot;: &quot;IPアドレス範囲&quot;</span>
+<span class="sd">          }</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_project_id</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mdxlib</span><span class="o">.</span><span class="n">get_segment_summary</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_project_id</span><span class="p">,</span> <span class="n">segment_id</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="MdxResourceExt.get_dnat">
+<a class="viewcode-back" href="../../../tmp/vcpsdk/doc_mdx/docker/vcpsdk.html#vcpsdk.plugins.mdx_ext.MdxResourceExt.get_dnat">[ドキュメント]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_dnat</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        プロジェクトに属するDNAT情報の取得</span>
+
+<span class="sd">        :returns: 以下のような、プロジェクトに属する DNAT 情報のリスト</span>
+
+<span class="sd">        .. code-block:: json</span>
+
+<span class="sd">          [</span>
+<span class="sd">            {</span>
+<span class="sd">              &quot;uuid&quot;: &quot;DNAT ID&quot;,</span>
+<span class="sd">              &quot;pool_address&quot;: &quot;転送元グローバルIPv4アドレス&quot;,</span>
+<span class="sd">              &quot;segument&quot;: &quot;セグメント名&quot;,</span>
+<span class="sd">              &quot;dst_address&quot;: &quot;転送先プライベートIPアドレス&quot;</span>
+<span class="sd">            }</span>
+<span class="sd">          ]</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dnat_iter</span><span class="p">())</span></div>
+
+
+<div class="viewcode-block" id="MdxResourceExt.add_dnat">
+<a class="viewcode-back" href="../../../tmp/vcpsdk/doc_mdx/docker/vcpsdk.html#vcpsdk.plugins.mdx_ext.MdxResourceExt.add_dnat">[ドキュメント]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_dnat</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dnat_spec</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        指定したセグメントにDNATを追加する</span>
+
+<span class="sd">        :param dnat_spec: 以下のような DNAT 設定情報</span>
+
+<span class="sd">        .. code-block:: json</span>
+
+<span class="sd">          {</span>
+<span class="sd">            &quot;pool_address&quot;: &quot;転送元グローバルIPv4アドレス。プロジェクトの未使用グローバルIPアドレスを指定する。&quot;,</span>
+<span class="sd">            &quot;segment&quot;: &quot;ネットワークセグメントID&quot;,</span>
+<span class="sd">            &quot;dst_address&quot;: &quot;転送先プライベートIPアドレス。セグメントIPアドレス範囲内のIPアドレスを指定する。&quot;</span>
+<span class="sd">          }</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># TODO: validate</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mdxlib</span><span class="o">.</span><span class="n">add_dnat</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_project_id</span><span class="p">,</span> <span class="n">dnat_spec</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="MdxResourceExt.edit_dnat">
+<a class="viewcode-back" href="../../../tmp/vcpsdk/doc_mdx/docker/vcpsdk.html#vcpsdk.plugins.mdx_ext.MdxResourceExt.edit_dnat">[ドキュメント]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">edit_dnat</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dnat_id</span><span class="p">,</span> <span class="n">dnat_spec</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        指定したDNAT情報を更新する</span>
+
+<span class="sd">        :param dnat_id: DNAT ID</span>
+<span class="sd">        :param dnat_spec: 以下のような DNAT 設定情報</span>
+
+<span class="sd">        .. code-block:: json</span>
+
+<span class="sd">          {</span>
+<span class="sd">            &quot;pool_address&quot;: &quot;転送元グローバルIPv4アドレス。プロジェクトの未使用グローバルIPアドレスを指定する。&quot;,</span>
+<span class="sd">            &quot;segment&quot;: &quot;ネットワークセグメントID&quot;,</span>
+<span class="sd">            &quot;dst_address&quot;: &quot;転送先プライベートIPアドレス。セグメントIPアドレス範囲内のIPアドレスを指定する。&quot;</span>
+<span class="sd">          }</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># TODO: validate</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mdxlib</span><span class="o">.</span><span class="n">edit_dnat</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_project_id</span><span class="p">,</span> <span class="n">dnat_id</span><span class="p">,</span> <span class="n">dnat_spec</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="MdxResourceExt.delete_dnat">
+<a class="viewcode-back" href="../../../tmp/vcpsdk/doc_mdx/docker/vcpsdk.html#vcpsdk.plugins.mdx_ext.MdxResourceExt.delete_dnat">[ドキュメント]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">delete_dnat</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dnat_id</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        DNATの削除を実行する</span>
+
+<span class="sd">        :param dnat_id: DNAT ID</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_mdxlib</span><span class="o">.</span><span class="n">delete_dnat</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_project_id</span><span class="p">,</span> <span class="n">dnat_id</span><span class="p">)</span></div>
+
+        <span class="c1"># 返り値なし</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_vm_id_by_vm_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vm_name</span><span class="p">):</span>
+        <span class="n">target_vm</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">for</span> <span class="n">vm</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">vm_info_iter</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">vm</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">vm_name</span><span class="p">:</span>
+                <span class="n">target_vm</span> <span class="o">=</span> <span class="n">vm</span>
+                <span class="k">break</span>
+        <span class="k">if</span> <span class="n">target_vm</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">return</span> <span class="n">target_vm</span><span class="p">[</span><span class="s2">&quot;uuid&quot;</span><span class="p">]</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_find_vm</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vm_name</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        仮想マシンががあることを前提とする。</span>
+<span class="sd">        仮想マシンがない場合は例外を送出する。</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">vm_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_vm_id_by_vm_name</span><span class="p">(</span><span class="n">vm_name</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">vm_id</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;vm </span><span class="si">{}</span><span class="s2"> is not found&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">vm_name</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">vm_id</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_wait_until</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vm_id</span><span class="p">,</span> <span class="n">status</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">_i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">SLEEP_COUNT</span><span class="p">):</span>
+            <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">SLEEP_TIME_SEC</span><span class="p">)</span>
+            <span class="n">vm_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mdxlib</span><span class="o">.</span><span class="n">get_vm_info</span><span class="p">(</span><span class="n">vm_id</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;waiting expected: </span><span class="si">{}</span><span class="s2"> actual: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">status</span><span class="p">,</span> <span class="n">vm_info</span><span class="p">[</span><span class="s2">&quot;status&quot;</span><span class="p">]))</span>
+
+            <span class="k">if</span> <span class="n">vm_info</span><span class="p">[</span><span class="s2">&quot;status&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">status</span><span class="p">:</span>
+                <span class="k">break</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">MdxRestException</span><span class="p">(</span><span class="s2">&quot;wait_until </span><span class="si">{}</span><span class="s2"> is failed&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">status</span><span class="p">))</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;wait_until finished&quot;</span><span class="p">)</span></div>
+
+
+
+<span class="c1"># デフォルトのresolverがIPv6のアドレスを返すが、接続できないときに以下のコードを実行する</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">use_ipv4_only</span><span class="p">():</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">socket</span>
+    <span class="n">orig_getaddrinfo</span> <span class="o">=</span> <span class="n">socket</span><span class="o">.</span><span class="n">getaddrinfo</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">new_getaddrinfo</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">responses</span> <span class="o">=</span> <span class="n">orig_getaddrinfo</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">response</span>
+                <span class="k">for</span> <span class="n">response</span> <span class="ow">in</span> <span class="n">responses</span>
+                <span class="k">if</span> <span class="n">response</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">socket</span><span class="o">.</span><span class="n">AF_INET</span><span class="p">]</span>
+    <span class="n">socket</span><span class="o">.</span><span class="n">getaddrinfo</span> <span class="o">=</span> <span class="n">new_getaddrinfo</span>
+
+
+<span class="c1"># 簡易テスト</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">test</span><span class="p">(</span><span class="n">token</span><span class="p">):</span>
+    <span class="c1"># 仮想マシンの仕様</span>
+    <span class="n">pack_num</span> <span class="o">=</span> <span class="mi">4</span>
+    <span class="n">pack_type</span> <span class="o">=</span> <span class="s2">&quot;cpu&quot;</span>
+    <span class="n">disk_size</span> <span class="o">=</span> <span class="mi">50</span>
+    <span class="n">gpu</span> <span class="o">=</span> <span class="s2">&quot;0&quot;</span>
+    <span class="n">mdx_vm_default_template_name</span> <span class="o">=</span> <span class="s2">&quot;00_Ubuntu-2004-server (Recommended)&quot;</span>
+    <span class="n">mdx_vm_default_catalog_id</span> <span class="o">=</span> <span class="s2">&quot;16a41081-a1cf-428e-90d0-a147b3aa6fc2&quot;</span>
+    <span class="n">segment_name</span> <span class="o">=</span> <span class="s2">&quot;OCS-Developer&quot;</span>
+    <span class="n">project_name</span> <span class="o">=</span> <span class="s2">&quot;OCS-Developer&quot;</span>
+
+    <span class="n">vm_name</span> <span class="o">=</span> <span class="s2">&quot;python_test&quot;</span>
+    <span class="n">ssh_shared_key_path</span> <span class="o">=</span> <span class="s2">&quot;/home/mdxuser/.ssh/id_rsa_mdx.pub&quot;</span>
+
+    <span class="c1"># loggerの設定</span>
+    <span class="n">handler</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">StreamHandler</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="p">)</span>
+    <span class="n">formatter</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">Formatter</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%(asctime)s</span><span class="s2"> - </span><span class="si">%(levelname)s</span><span class="s2"> - </span><span class="si">%(message)s</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">handler</span><span class="o">.</span><span class="n">setFormatter</span><span class="p">(</span><span class="n">formatter</span><span class="p">)</span>
+    <span class="n">handler</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">addHandler</span><span class="p">(</span><span class="n">handler</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">)</span>
+
+    <span class="c1"># main</span>
+    <span class="n">mdx</span> <span class="o">=</span> <span class="n">MdxResourceExt</span><span class="p">(</span><span class="n">token</span><span class="p">)</span>
+
+    <span class="n">projects</span> <span class="o">=</span> <span class="n">mdx</span><span class="o">.</span><span class="n">get_assigned_projects</span><span class="p">()</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">projects</span><span class="p">)</span>
+
+    <span class="n">mdx</span><span class="o">.</span><span class="n">set_current_project_by_name</span><span class="p">(</span><span class="n">project_name</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;current project&quot;</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">mdx</span><span class="o">.</span><span class="n">get_current_project</span><span class="p">())</span>
+
+    <span class="c1"># vm_name = &quot;test_01&quot;</span>
+    <span class="c1"># logger.debug(mdx.get_vm_info(vm_name))</span>
+
+    <span class="c1"># network</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;network_segments&quot;</span><span class="p">)</span>
+    <span class="n">segment_list</span> <span class="o">=</span> <span class="n">mdx</span><span class="o">.</span><span class="n">get_segments</span><span class="p">()</span>
+    <span class="c1"># segment_id = segment_list[0][&quot;uuid&quot;]</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">segment_list</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">segment</span> <span class="ow">in</span> <span class="n">segment_list</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">segment</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">segment_name</span><span class="p">:</span>
+            <span class="n">segment_id</span> <span class="o">=</span> <span class="n">segment</span><span class="p">[</span><span class="s2">&quot;uuid&quot;</span><span class="p">]</span>
+            <span class="k">break</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;segment </span><span class="si">{}</span><span class="s2"> is not found&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">segment_name</span><span class="p">))</span>
+
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;dnat&quot;</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">mdx</span><span class="o">.</span><span class="n">get_dnat</span><span class="p">(),</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">))</span>
+
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;acl&quot;</span><span class="p">)</span>
+    <span class="c1"># acl_ipv4_id = &quot;461a371d-8d33-4b8f-84f3-12fe61139d0c&quot;</span>
+    <span class="c1"># mdx.delete_allow_acl_ipv4_info(acl_ipv4_id)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">mdx</span><span class="o">.</span><span class="n">get_allow_acl_ipv4_info</span><span class="p">(</span><span class="n">segment_id</span><span class="p">),</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">))</span>
+    <span class="c1"># acl_spec = {</span>
+    <span class="c1">#     &quot;segment&quot;: segment_id,</span>
+    <span class="c1">#     &quot;src_address&quot;: &quot;153.156.73.115&quot;,</span>
+    <span class="c1">#     &quot;src_mask&quot;: &quot;32&quot;,</span>
+    <span class="c1">#     &quot;src_port&quot;: &quot;1111&quot;,</span>
+    <span class="c1">#     &quot;dst_address&quot;: &quot;10.17.152.0&quot;,</span>
+    <span class="c1">#     &quot;dst_mask&quot;: &quot;21&quot;,</span>
+    <span class="c1">#     &quot;dst_port&quot;: &quot;1111&quot;,</span>
+    <span class="c1">#     &quot;protocol&quot;: &quot;TCP&quot;,</span>
+    <span class="c1"># }</span>
+    <span class="c1"># logger.debug(mdx.add_allow_acl_ipv4_info(acl_spec))</span>
+
+    <span class="c1"># logger.debug(json.dumps(mdx.get_vm_list(), indent=2))</span>
+
+    <span class="c1"># logger.debug(&quot;catalog&quot;)</span>
+    <span class="c1"># vm_catalog_list = mdx.get_vm_catalogs()</span>
+    <span class="c1"># logger.debug(vm_catalog_list)</span>
+
+    <span class="c1"># target_catalog = None</span>
+    <span class="c1"># for catalog in vm_catalog_list:</span>
+    <span class="c1">#     if catalog[&quot;name&quot;].startswith(mdx_vm_default_template_name):</span>
+    <span class="c1">#         target_catalog = catalog</span>
+    <span class="c1">#         break</span>
+    <span class="c1"># else:</span>
+    <span class="c1">#     raise Exception(&quot;no catalog found: {}&quot;.format(mdx_vm_default_template_name))</span>
+
+    <span class="c1"># logger.debug(target_catalog)</span>
+
+    <span class="c1"># logger.debug(&quot;network_segment_summary&quot;)</span>
+    <span class="c1"># # TODO: error: not found</span>
+    <span class="c1"># logger.debug(mdx.get_segment_summary(segment_id))</span>
+
+    <span class="c1"># 動作確認済み</span>
+    <span class="c1"># logger.debug(&quot;project history&quot;)</span>
+    <span class="c1"># logger.debug(mdx.get_project_history())</span>
+
+    <span class="c1"># 既に仮想マシンがあったら一旦削除</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">mdx</span><span class="o">.</span><span class="n">get_vm_info</span><span class="p">(</span><span class="n">vm_name</span><span class="p">))</span>
+<span class="c1">#        mdx.power_off_vm(vm_name)</span>
+<span class="c1">#        mdx.destroy_vm(vm_name)</span>
+    <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="s2">&quot;init poweroff&quot;</span><span class="p">)</span>
+
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">ssh_shared_key_path</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">ssh_shared_key</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+
+    <span class="n">lst</span> <span class="o">=</span> <span class="n">mdx</span><span class="o">.</span><span class="n">get_vm_list</span><span class="p">()</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">lst</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">))</span>
+
+    <span class="c1"># 以下変更不要</span>
+    <span class="c1"># vm_name=vm_name,</span>
+    <span class="c1"># os_type=&quot;Linux&quot;,</span>
+    <span class="c1"># power_on=True,</span>
+    <span class="c1"># project=project_id,</span>
+    <span class="n">vm_spec</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+        <span class="n">catalog</span><span class="o">=</span><span class="n">mdx_vm_default_catalog_id</span><span class="p">,</span>
+        <span class="n">template_name</span><span class="o">=</span><span class="n">mdx_vm_default_template_name</span><span class="p">,</span>
+        <span class="n">pack_num</span><span class="o">=</span><span class="n">pack_num</span><span class="p">,</span>
+        <span class="n">pack_type</span><span class="o">=</span><span class="n">pack_type</span><span class="p">,</span>
+        <span class="n">disk_size</span><span class="o">=</span><span class="n">disk_size</span><span class="p">,</span>
+        <span class="n">gpu</span><span class="o">=</span><span class="n">gpu</span><span class="p">,</span>
+        <span class="c1"># TODO: ネットワークセグメントの名前のリストで指定させる?</span>
+        <span class="n">network_adapters</span><span class="o">=</span><span class="p">[</span>
+            <span class="nb">dict</span><span class="p">(</span>
+                <span class="n">adapter_number</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                <span class="n">segment</span><span class="o">=</span><span class="n">segment_id</span>
+            <span class="p">)</span>
+        <span class="p">],</span>
+        <span class="n">shared_key</span><span class="o">=</span><span class="n">ssh_shared_key</span><span class="p">,</span>
+        <span class="n">storage_network</span><span class="o">=</span><span class="s2">&quot;portgroup&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">info</span> <span class="o">=</span> <span class="n">mdx</span><span class="o">.</span><span class="n">deploy_vm</span><span class="p">(</span><span class="n">vm_name</span><span class="p">,</span> <span class="n">vm_spec</span><span class="p">)</span>
+
+    <span class="c1"># deploy completed</span>
+    <span class="c1"># ssh loginができるようになるまで待つ</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">info</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">))</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">mdx</span><span class="o">.</span><span class="n">get_vm_info</span><span class="p">(</span><span class="n">vm_name</span><span class="p">),</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">))</span>
+
+    <span class="c1"># mdx.reboot_vm(vm_name)</span>
+    <span class="c1"># mdx.power_off_vm(vm_name)</span>
+    <span class="c1"># mdx.destroy_vm(vm_name)</span>
+    <span class="c1"># logger.debug(&quot;project history&quot;)</span>
+    <span class="c1"># logger.debug(json.dumps(mdx.get_project_history(), indent=2))</span>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="c1"># test</span>
+    <span class="n">token</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="c1"># mini test</span>
+    <span class="c1"># mdx = MdxResourceExt()</span>
+    <span class="c1"># mdx.login(token)</span>
+
+    <span class="n">test</span><span class="p">(</span><span class="n">token</span><span class="p">)</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, NII.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

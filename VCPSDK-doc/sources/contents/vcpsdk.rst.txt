@@ -1,0 +1,180 @@
+VCP SDK
+============================
+
+SDKベースクラス(vcpsdk/vcpsdk)
+----------------------------------------
+
+.. automodule:: vcpsdk.vcpsdk
+    :members:
+    :undoc-members:
+    :private-members:
+    :exclude-members: create_empty_vc,check_search_cond_,class_,wait_nodes_applied,empty_cci,wait_cleanup,wait_unit_applied,find_ip_addresses,_update_name
+
+SDK plugins for AWS (vcpsdk/plugins/aws)
+--------------------------------------------
+
+.. automodule:: vcpsdk.plugins.aws
+    :members:
+    :undoc-members:
+    :private-members:
+
+SDK plugins for Azure (vcpsdk/plugins/azure)
+--------------------------------------------
+
+.. automodule:: vcpsdk.plugins.azure
+    :members:
+    :undoc-members:
+    :private-members:
+
+SDK plugins for Sakura (vcpsdk/plugins/sakura)
+------------------------------------------------
+
+.. automodule:: vcpsdk.plugins.sakura
+    :members:
+    :undoc-members:
+    :private-members:
+
+SDK plugins for AIC(vcpsdk/plugins/aic)
+--------------------------------------------
+
+.. automodule:: vcpsdk.plugins.aic
+    :members:
+    :undoc-members:
+    :private-members:
+
+SDK plugins for ABC (vcpsdk/plugins/abc)
+--------------------------------------------
+
+.. automodule:: vcpsdk.plugins.abc
+    :members:
+    :undoc-members:
+    :private-members:
+
+SDK plugins for GCP (vcpsdk/plugins/gcp)
+--------------------------------------------
+
+.. automodule:: vcpsdk.plugins.gcp
+    :members:
+    :undoc-members:
+    :private-members:
+
+SDK plugins for Onpremises (vcpsdk/plugins/onpremises)
+--------------------------------------------------------
+
+.. automodule:: vcpsdk.plugins.onpremises
+    :members:
+    :undoc-members:
+    :private-members:
+
+SDK plugins for AWS Disk (vcpsdk/plugins/aws_disk)
+--------------------------------------------------------
+
+.. automodule:: vcpsdk.plugins.aws_disk
+    :members:
+    :undoc-members:
+    :private-members:
+
+SDK plugins for Azure Disk (vcpsdk/plugins/azure_disk)
+--------------------------------------------------------
+
+.. automodule:: vcpsdk.plugins.azure_disk
+    :members:
+    :undoc-members:
+    :private-members:
+
+SDK plugins for Sakura Disk (vcpsdk/plugins/sakura_disk)
+---------------------------------------------------------
+
+.. automodule:: vcpsdk.plugins.sakura_disk
+    :members:
+    :undoc-members:
+    :private-members:
+
+SDK plugins for AWS Spot Instance (vcpsdk/plugins/aws_spot)
+------------------------------------------------------------
+
+.. automodule:: vcpsdk.plugins.aws_spot
+    :members:
+    :undoc-members:
+    :private-members:
+
+SDK plugins for VMware (vcpsdk/plugins/vmware)
+--------------------------------------------------------
+
+.. automodule:: vcpsdk.plugins.vmware
+    :members:
+    :undoc-members:
+    :private-members:
+
+SDK plugins for Hokudai (vcpsdk/plugins/hokudai)
+--------------------------------------------------------
+
+.. automodule:: vcpsdk.plugins.hokudai
+    :members:
+    :undoc-members:
+    :private-members:
+
+SDK plugins for Oracle Cloud (vcpsdk/plugins/oracle)
+--------------------------------------------------------
+
+.. automodule:: vcpsdk.plugins.oracle
+    :members:
+    :undoc-members:
+    :private-members:
+
+SDK plugins for Oracle Cloud Disk (vcpsdk/plugins/oracle_disk)
+---------------------------------------------------------------
+
+.. automodule:: vcpsdk.plugins.oracle_disk
+    :members:
+    :undoc-members:
+    :private-members:
+
+SDK plugins for Chameleon Cloud (vcpsdk/plugins/chameleon)
+---------------------------------------------------------------
+
+.. automodule:: vcpsdk.plugins.chameleon
+    :members:
+    :undoc-members:
+    :private-members:
+
+SDK plugins for Chameleon Cloud extension (vcpsdk/plugins/chameleon_ext)
+-------------------------------------------------------------------------
+
+.. automodule:: vcpsdk.plugins.chameleon_ext
+    :members:
+    :undoc-members:
+    :private-members:
+    :exclude-members: local_exec, cli_env, set_property, verbose, version
+
+SDK plugins for mdx extension (vcpsdk/plugins/mdx_ext)
+-------------------------------------------------------------------------
+
+.. autoclass:: vcpsdk.plugins.mdx_ext.MdxResourceExt
+    :members:
+    :undoc-members:
+    :exclude-members:
+
+SDK plugins for mdx2 extension (vcpsdk/plugins/mdx2)
+---------------------------------------------------------
+
+.. automodule:: vcpsdk.plugins.mdx2
+    :members:
+    :undoc-members:
+    :private-members:
+
+SDK plugins for mdx2 Disk (vcpsdk/plugins/mdx2_disk)
+---------------------------------------------------------
+
+.. automodule:: vcpsdk.plugins.mdx2_disk
+    :members:
+    :undoc-members:
+    :private-members:
+
+SDK plugins for Proxmox VE (vcpsdk/plugins/proxmox)
+--------------------------------------------------------
+
+.. automodule:: vcpsdk.plugins.proxmox
+    :members:
+    :undoc-members:
+    :private-members:

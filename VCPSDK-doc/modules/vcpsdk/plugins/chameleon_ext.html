@@ -1,0 +1,782 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="ja" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>vcpsdk.plugins.chameleon_ext &mdash; VCP  ドキュメント</title>
+      <link rel="stylesheet" type="text/css" href="../../../static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../../../static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../static/css/fix-layout-pyproperty.css?v=9367d857" />
+
+  
+      <script src="../../../static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../static/documentation_options.js?v=c033477b"></script>
+      <script src="../../../static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../../../static/translations.js?v=4755f45a"></script>
+    <script src="../../../static/js/theme.js"></script>
+    <link rel="index" title="索引" href="../../../genindex.html" />
+    <link rel="search" title="検索" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            VCP
+          </a>
+              <div class="version">
+                25.10.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">目次:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../vcpsdk_man.html">1. VCP SDK の機能仕様とシステム設計について</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../vcpsdk.html">2. VCP SDK</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../vcplib.html">3. VCP LIB</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../vcpcli.html">4. VCP CLI操作説明書</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">VCP</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">モジュールコード</a></li>
+      <li class="breadcrumb-item active">vcpsdk.plugins.chameleon_ext</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>vcpsdk.plugins.chameleon_ext のソースコード</h1><div class="highlight"><pre>
+<span></span><span class="c1">#</span>
+<span class="c1"># Chamelenon Extentsions</span>
+<span class="c1">#</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">subprocess</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">uuid</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pprint</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">datetime</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">vcpcli.vault</span><span class="w"> </span><span class="kn">import</span> <span class="n">VaultClient</span>  <span class="c1"># noqa</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">vcpsdk.plugins.ext</span><span class="w"> </span><span class="kn">import</span> <span class="n">VcpExtResource</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">vcpsdk.vcp_tools</span><span class="w"> </span><span class="kn">import</span> <span class="n">VcpSDKError</span>
+
+<span class="n">DEFAULT_VCC_PORT</span> <span class="o">=</span> <span class="mi">443</span>
+<span class="n">DEFAULT_VAULT_PORT</span> <span class="o">=</span> <span class="mi">8443</span>
+
+<span class="c1"># 最終的にTrue</span>
+<span class="n">VERIFY</span> <span class="o">=</span> <span class="kc">True</span>
+
+<span class="n">BUILD_VERSION</span> <span class="o">=</span> <span class="s2">&quot;20200831&quot;</span>
+
+
+<div class="viewcode-block" id="VcpChameleonOpenrc">
+<a class="viewcode-back" href="../../../vcpsdk.html#vcpsdk.plugins.chameleon_ext.VcpChameleonOpenrc">[ドキュメント]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">VcpChameleonOpenrc</span><span class="p">(</span><span class="n">VcpExtResource</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Chamelenon Extentsions の BASEクラス</span>
+<span class="sd">    (内部クラスであるためAPI上は無視してよい)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">version</span> <span class="o">=</span> <span class="n">BUILD_VERSION</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">provider_name</span><span class="p">,</span> <span class="n">config_dir</span><span class="p">,</span> <span class="n">token</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">provider_name</span><span class="p">,</span> <span class="n">config_dir</span><span class="p">,</span> <span class="n">token</span><span class="p">)</span>
+
+        <span class="c1"># debug output</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_verbose</span> <span class="o">=</span> <span class="n">verbose</span>
+
+        <span class="c1"># vaultはssl 固定とする</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_vcc_host</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_vcp_config</span><span class="p">[</span><span class="s2">&quot;vcc&quot;</span><span class="p">][</span><span class="s2">&quot;host&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_vcc_port</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_vcp_config</span><span class="p">[</span><span class="s2">&quot;vcc&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;vcc_port&quot;</span><span class="p">,</span> <span class="n">DEFAULT_VCC_PORT</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_vault_port</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_vcp_config</span><span class="p">[</span><span class="s2">&quot;vcc&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;vault_port&quot;</span><span class="p">,</span> <span class="n">DEFAULT_VAULT_PORT</span><span class="p">)</span>
+
+        <span class="c1"># vault client 接続</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">vault_cli</span> <span class="o">=</span> <span class="n">VaultClient</span><span class="p">(</span>
+            <span class="n">vcc_host</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_vcc_host</span><span class="p">,</span> <span class="n">token</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_token</span><span class="p">,</span> <span class="n">no_verify</span><span class="o">=</span><span class="kc">False</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">verbose</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">verbose</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Chameleon extension の verbose</span>
+
+<span class="sd">        :param verbose: &gt; 0 でdebug出力</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_verbose</span> <span class="o">=</span> <span class="n">verbose</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_property</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vpn_catalog</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Chameleon 用のコマンド実行するためのパラメータ設定</span>
+
+<span class="sd">        :param vpn_catalog: = vcpsdk.get_vpn_catalog() で取得できるVPNカタログ情報</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_auth_url</span> <span class="o">=</span> <span class="n">vpn_catalog</span><span class="p">[</span><span class="s2">&quot;chameleon_auth_url&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_region</span> <span class="o">=</span> <span class="n">vpn_catalog</span><span class="p">[</span><span class="s2">&quot;chameleon_region&quot;</span><span class="p">]</span>
+        <span class="c1"># TODO; interfaceの項目と値を確認</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_interface</span> <span class="o">=</span> <span class="n">vpn_catalog</span><span class="p">[</span><span class="s2">&quot;chameleon_interface&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_identity_api_version</span> <span class="o">=</span> <span class="n">vpn_catalog</span><span class="p">[</span><span class="s2">&quot;chameleon_identity_api_version&quot;</span><span class="p">]</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">local_exec</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">,</span> <span class="n">env</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Chameleon 用のコマンド実行</span>
+
+<span class="sd">        :param cmd: コマンドライン文字列</span>
+<span class="sd">        :param env: 環境変数</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># TODO maskする (ストレージアカウントKey)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_verbose</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;--- command ---&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">cmd</span><span class="p">))</span>
+        <span class="n">proc</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">Popen</span><span class="p">(</span>
+            <span class="n">args</span><span class="o">=</span><span class="n">cmd</span><span class="p">,</span>
+            <span class="n">env</span><span class="o">=</span><span class="n">env</span><span class="p">,</span>
+            <span class="n">stdin</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">DEVNULL</span><span class="p">,</span>
+            <span class="n">stdout</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span><span class="p">,</span>
+            <span class="n">stderr</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="p">(</span><span class="n">stdout</span><span class="p">,</span> <span class="n">stderr</span><span class="p">)</span> <span class="o">=</span> <span class="n">proc</span><span class="o">.</span><span class="n">communicate</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">proc</span><span class="o">.</span><span class="n">returncode</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span>
+                <span class="s2">&quot;stdout = </span><span class="si">%s</span><span class="se">\n</span><span class="s2">stderr = </span><span class="si">%s</span><span class="s2">&quot;</span>
+                <span class="o">%</span> <span class="p">(</span><span class="n">stdout</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">),</span> <span class="n">stderr</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">))</span>
+            <span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_verbose</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">stdout</span><span class="p">))</span>
+                <span class="k">if</span> <span class="n">stderr</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">stderr</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">stderr</span><span class="p">))</span>
+            <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                <span class="n">pprint</span><span class="o">.</span><span class="n">pprint</span><span class="p">(</span><span class="n">stdout</span><span class="p">)</span>
+                <span class="n">pprint</span><span class="o">.</span><span class="n">pprint</span><span class="p">(</span><span class="n">stderr</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="p">(</span><span class="n">stdout</span><span class="p">,</span> <span class="n">stderr</span><span class="p">)</span>
+
+    <span class="c1"># TODO: openstackでの動作確認</span>
+    <span class="c1"># blazar cli起動時の環境変数の設定</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">cli_env</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Chameleon 用のコマンド実行時の環境変数設定</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">child_env</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">child_env</span><span class="p">[</span><span class="s2">&quot;OS_AUTH_URL&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_auth_url</span>
+        <span class="n">child_env</span><span class="p">[</span><span class="s2">&quot;OS_AUTH_TYPE&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;v3applicationcredential&quot;</span>
+        <span class="n">child_env</span><span class="p">[</span><span class="s2">&quot;OS_REGION_NAME&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_region</span>
+        <span class="n">child_env</span><span class="p">[</span><span class="s2">&quot;OS_INTERFACE&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_interface</span>
+        <span class="n">child_env</span><span class="p">[</span><span class="s2">&quot;OS_IDENTITY_API_VERSION&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_identity_api_version</span>
+
+        <span class="c1"># vcp_config.yml から chameleon のクレデンシャル情報を取得</span>
+        <span class="n">chameleon_config</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_vcp_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;chameleon&quot;</span><span class="p">)</span>
+        <span class="n">child_env</span><span class="p">[</span>
+            <span class="s2">&quot;OS_APPLICATION_CREDENTIAL_ID&quot;</span>
+        <span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">vault_cli</span><span class="o">.</span><span class="n">read_cloud_params_value</span><span class="p">(</span>
+            <span class="n">chameleon_config</span><span class="p">[</span><span class="s2">&quot;application_credential_id&quot;</span><span class="p">]</span>
+        <span class="p">)</span>
+        <span class="n">child_env</span><span class="p">[</span>
+            <span class="s2">&quot;OS_APPLICATION_CREDENTIAL_SECRET&quot;</span>
+        <span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">vault_cli</span><span class="o">.</span><span class="n">read_cloud_params_value</span><span class="p">(</span>
+            <span class="n">chameleon_config</span><span class="p">[</span><span class="s2">&quot;application_credential_secret&quot;</span><span class="p">]</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">child_env</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">child_env</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cli_env</span><span class="p">()</span>
+
+        <span class="n">text</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">OS_AUTH_URL: </span><span class="si">{OS_AUTH_URL}</span>
+<span class="s2">OS_INTERFACE: </span><span class="si">{OS_INTERFACE}</span>
+<span class="s2">OS_IDENTITY_API_VERSION: </span><span class="si">{OS_IDENTITY_API_VERSION}</span>
+<span class="s2">OS_APPLICATION_CREDENTIAL_ID: </span><span class="si">{OS_APPLICATION_CREDENTIAL_ID}</span>
+<span class="s2">OS_APPLICATION_CREDENTIAL_SECRET: ****&quot;&quot;&quot;</span><span class="o">.</span><span class="n">format_map</span><span class="p">(</span>
+            <span class="n">child_env</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">text</span></div>
+
+
+
+<div class="viewcode-block" id="VcpExtResourceChameleonNetwork">
+<a class="viewcode-back" href="../../../vcpsdk.html#vcpsdk.plugins.chameleon_ext.VcpExtResourceChameleonNetwork">[ドキュメント]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">VcpExtResourceChameleonNetwork</span><span class="p">(</span><span class="n">VcpChameleonOpenrc</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    chameleon上でvlanセグメントを予約し、ネットワークを構築する。sharedwan1 を使用する場合は不要。</span>
+
+<span class="sd">    サンプルコード</span>
+
+<span class="sd">.. code-block:: python</span>
+
+<span class="sd">    # vpnカタログ情報を取得</span>
+<span class="sd">    vpn_catalog_name = &quot;default&quot;</span>
+<span class="sd">    vpn_catalog = vcpsdk.get_vpn_catalog(&quot;chameleon&quot;, catalog_name=vpn_catalog_name)</span>
+
+<span class="sd">    # Chameleon Network の予約用 extension を生成</span>
+<span class="sd">    network_ext = vcpsdk.get_ext(&quot;chameleon_network&quot;)</span>
+<span class="sd">    network_ext.setup(vpn_catalog)</span>
+
+<span class="sd">    # 期間 %Y-%m-d %H:%M (省略可) を指定して、Chameleon Network を予約</span>
+<span class="sd">    #    start_date = start_dt.strftime(&quot;%Y-%m-%d %H:%M&quot;)</span>
+<span class="sd">    network_ext.create_network(start_date=start_date, end_date=end_date)</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="VcpExtResourceChameleonNetwork.setup">
+<a class="viewcode-back" href="../../../vcpsdk.html#vcpsdk.plugins.chameleon_ext.VcpExtResourceChameleonNetwork.setup">[ドキュメント]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">setup</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vpn_catalog</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; chameleon のネットワークの予約情報を作成する</span>
+
+<span class="sd">        :param vpn_catalog: VPNカタログ情報</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_vpn_catalog</span> <span class="o">=</span> <span class="n">vpn_catalog</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_property</span><span class="p">(</span><span class="n">vpn_catalog</span><span class="p">)</span>
+
+        <span class="c1"># TODO; VCコントローラID, VPNカタログ名</span>
+        <span class="c1"># network name + xxx (network_nameがほかVCコントローラとかぶらない前提)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_network_lease_name</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="s2">-net-lease&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">network_name</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="VcpExtResourceChameleonNetwork.network_exists">
+<a class="viewcode-back" href="../../../vcpsdk.html#vcpsdk.plugins.chameleon_ext.VcpExtResourceChameleonNetwork.network_exists">[ドキュメント]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">network_exists</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_property</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_vpn_catalog</span><span class="p">)</span>
+        <span class="n">network_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">network_name</span>
+        <span class="n">cmd</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;openstack&quot;</span><span class="p">,</span> <span class="s2">&quot;network&quot;</span><span class="p">,</span> <span class="s2">&quot;list&quot;</span><span class="p">,</span> <span class="s2">&quot;-f&quot;</span><span class="p">,</span> <span class="s2">&quot;json&quot;</span><span class="p">]</span>
+        <span class="p">(</span><span class="n">stdout</span><span class="p">,</span> <span class="n">stderr</span><span class="p">)</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">local_exec</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">env</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cli_env</span><span class="p">())</span>
+        <span class="n">network</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">stdout</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">network_name</span> <span class="ow">in</span> <span class="p">[</span><span class="n">x</span><span class="p">[</span><span class="s2">&quot;Name&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">network</span><span class="p">]</span></div>
+
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">network_name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_vpn_catalog</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;chameleon_network_name&quot;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="VcpExtResourceChameleonNetwork.create_network">
+<a class="viewcode-back" href="../../../vcpsdk.html#vcpsdk.plugins.chameleon_ext.VcpExtResourceChameleonNetwork.create_network">[ドキュメント]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">create_network</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">start_date</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">end_date</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; vlanセグメントを予約し、予約できた場合にネットワーク、サブネットを作成する。</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_property</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_vpn_catalog</span><span class="p">)</span>
+
+        <span class="n">network_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">network_name</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">network_exists</span><span class="p">():</span>
+            <span class="n">VcpSDKError</span><span class="p">(</span><span class="s2">&quot;network </span><span class="si">{}</span><span class="s2"> already exists&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">network_name</span><span class="p">))</span>
+
+        <span class="n">network_spec</span> <span class="o">=</span> <span class="s2">&quot;resource_type=network,network_name=</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">network_name</span><span class="p">)</span>
+
+        <span class="c1"># vlanの予約</span>
+        <span class="c1"># TODO: VLAN IDの固定</span>
+        <span class="c1">#    network_spec = &#39;resource_type=network,network_name={},resource_properies[&quot;==&quot;, &quot;$segment_id&quot;,&quot;{}&quot;]&#39;.format(</span>
+        <span class="c1">#        catalog[&quot;chameleon_network_name&quot;], catalog[&quot;chameleon_network_segment_id&quot;]</span>
+        <span class="c1">#    )</span>
+
+        <span class="n">date_opt</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="n">start_date</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">date_opt</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;--start-date=</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">start_date</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">end_date</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">date_opt</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;--end-date=</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">end_date</span><span class="p">))</span>
+
+        <span class="c1"># TODO: 予約があってネットワークがないという自体を考慮して、予約が有るかチェック?</span>
+        <span class="c1"># 成功するとネットワークが作成される</span>
+        <span class="n">cmd</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="p">[</span><span class="s2">&quot;blazar&quot;</span><span class="p">,</span> <span class="s2">&quot;lease-create&quot;</span><span class="p">,</span> <span class="s2">&quot;-f&quot;</span><span class="p">,</span> <span class="s2">&quot;json&quot;</span><span class="p">]</span>
+            <span class="o">+</span> <span class="n">date_opt</span>
+            <span class="o">+</span> <span class="p">[</span><span class="s2">&quot;--reservation&quot;</span><span class="p">,</span> <span class="n">network_spec</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_network_lease_name</span><span class="p">]</span>
+        <span class="p">)</span>
+        <span class="p">(</span><span class="n">stdout</span><span class="p">,</span> <span class="n">stderr</span><span class="p">)</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">local_exec</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">env</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cli_env</span><span class="p">())</span>
+
+        <span class="c1"># TODO; get reservation id</span>
+        <span class="c1"># TODO: networkのleaseのstatus確認</span>
+        <span class="k">for</span> <span class="n">_i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">20</span><span class="p">):</span>
+            <span class="n">cmd</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;openstack&quot;</span><span class="p">,</span> <span class="s2">&quot;network&quot;</span><span class="p">,</span> <span class="s2">&quot;list&quot;</span><span class="p">,</span> <span class="s2">&quot;-f&quot;</span><span class="p">,</span> <span class="s2">&quot;json&quot;</span><span class="p">]</span>
+            <span class="p">(</span><span class="n">stdout</span><span class="p">,</span> <span class="n">stderr</span><span class="p">)</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">local_exec</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">env</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cli_env</span><span class="p">())</span>
+            <span class="n">network</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">stdout</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">network_name</span> <span class="ow">in</span> <span class="p">[</span><span class="n">x</span><span class="p">[</span><span class="s2">&quot;Name&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">network</span><span class="p">]:</span>
+                <span class="k">break</span>
+            <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+
+        <span class="c1"># openstackのサブネットの作成</span>
+        <span class="c1"># https://chameleoncloud.readthedocs.io/en/latest/technical/networks/networks_vlan.html?highlight=subnet%20create</span>
+        <span class="c1"># &quot;--dhcp&quot;,  # TODO if enabled in catalog</span>
+        <span class="n">cmd</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="s2">&quot;openstack&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;subnet&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;create&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;-f&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;json&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;--subnet-range&quot;</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_vpn_catalog</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;private_network_ipmask&quot;</span><span class="p">),</span>
+            <span class="s2">&quot;--network&quot;</span><span class="p">,</span>
+            <span class="n">network_name</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_vpn_catalog</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;chameleon_subnet_name&quot;</span><span class="p">),</span>
+        <span class="p">]</span>
+        <span class="p">(</span><span class="n">stdout</span><span class="p">,</span> <span class="n">stderr</span><span class="p">)</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">local_exec</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">env</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cli_env</span><span class="p">())</span></div>
+</div>
+
+        <span class="c1"># TODO; get lease_id</span>
+        <span class="c1"># TODO: 作成できたかどうかを返す</span>
+
+
+<div class="viewcode-block" id="VcpExtResourceChameleonHostLeaseInfo">
+<a class="viewcode-back" href="../../../vcpsdk.html#vcpsdk.plugins.chameleon_ext.VcpExtResourceChameleonHostLeaseInfo">[ドキュメント]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">VcpExtResourceChameleonHostLeaseInfo</span><span class="p">(</span><span class="n">VcpChameleonOpenrc</span><span class="p">):</span>
+
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Chameleon クラウドインスタンスの予約結果</span>
+
+<span class="sd">    サンプルコード</span>
+
+<span class="sd">.. code-block:: python</span>
+
+<span class="sd">    # lease idを使って情報取得</span>
+<span class="sd">    info_ext = vcpsdk.get_extension(&quot;chameleon_host_lease_info&quot;)</span>
+<span class="sd">    info_ext.setup(lease_info.host_lease_id, vpn_catalog)</span>
+<span class="sd">    print(info_ext)</span>
+
+<span class="sd">    print(&quot;host_lease_id is {}&quot;.format(info_ext.host_lease_id))</span>
+<span class="sd">    print(&quot;reservation_id is {}&quot;.format(info_ext.reservation_id))</span>
+<span class="sd">    print(&quot;status is {}&quot;.format(info_ext.status))</span>
+
+<span class="sd">    # 予約の延長</span>
+<span class="sd">    info_ext.extend()</span>
+
+<span class="sd">    # 予約の削除</span>
+<span class="sd">    info_ext.delete()</span>
+
+<span class="sd">    # 予約の完了まで待つ</span>
+<span class="sd">    info_ext.wait()</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="VcpExtResourceChameleonHostLeaseInfo.setup">
+<a class="viewcode-back" href="../../../vcpsdk.html#vcpsdk.plugins.chameleon_ext.VcpExtResourceChameleonHostLeaseInfo.setup">[ドキュメント]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">setup</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">host_lease_id</span><span class="p">,</span> <span class="n">vpn_catalog</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; chameleon のホストの予約情報を設定する</span>
+
+<span class="sd">        :param host_lease_id: ホストの予約情報識別子</span>
+<span class="sd">        :param vpn_catalog: VPNカタログ情報</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_host_lease_id</span> <span class="o">=</span> <span class="n">host_lease_id</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_reservation_id</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_vpn_catalog</span> <span class="o">=</span> <span class="n">vpn_catalog</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_property</span><span class="p">(</span><span class="n">vpn_catalog</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">update</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="VcpExtResourceChameleonHostLeaseInfo.update">
+<a class="viewcode-back" href="../../../vcpsdk.html#vcpsdk.plugins.chameleon_ext.VcpExtResourceChameleonHostLeaseInfo.update">[ドキュメント]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        ホストの予約情報を再取得する。</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">cmd</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;blazar&quot;</span><span class="p">,</span> <span class="s2">&quot;lease-show&quot;</span><span class="p">,</span> <span class="s2">&quot;-f&quot;</span><span class="p">,</span> <span class="s2">&quot;json&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_host_lease_id</span><span class="p">]</span>
+        <span class="p">(</span><span class="n">stdout</span><span class="p">,</span> <span class="n">stderr</span><span class="p">)</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">local_exec</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">env</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cli_env</span><span class="p">())</span>
+        <span class="n">info</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">stdout</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_verbose</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">info</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">))</span>
+        <span class="n">reservation_info</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">info</span><span class="p">[</span><span class="s2">&quot;reservations&quot;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_reservation_id</span> <span class="o">=</span> <span class="n">reservation_info</span><span class="p">[</span><span class="s2">&quot;id&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_start_date</span> <span class="o">=</span> <span class="n">info</span><span class="p">[</span><span class="s2">&quot;start_date&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_end_date</span> <span class="o">=</span> <span class="n">info</span><span class="p">[</span><span class="s2">&quot;end_date&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_status</span> <span class="o">=</span> <span class="n">info</span><span class="p">[</span><span class="s2">&quot;status&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_updated_at</span> <span class="o">=</span> <span class="n">info</span><span class="p">[</span><span class="s2">&quot;updated_at&quot;</span><span class="p">]</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s2">&quot;lease_id: </span><span class="si">{}</span><span class="se">\n</span><span class="s2"> reservation_id: </span><span class="si">{}</span><span class="se">\n</span><span class="s2"> state: </span><span class="si">{}</span><span class="se">\n</span><span class="s2">start_date: </span><span class="si">{}</span><span class="se">\n</span><span class="s2">end_date </span><span class="si">{}</span><span class="se">\n</span><span class="s2">updated_at:</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_host_lease_id</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_reservation_id</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_status</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_start_date</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_end_date</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_updated_at</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="c1"># getter</span>
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">reservation_id</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        reservation IDを返す。CCIのreservationに指定する。</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reservation_id</span>
+
+    <span class="c1"># getter</span>
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">host_lease_id</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        lease IDを返す。</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_host_lease_id</span>
+
+    <span class="c1"># getter</span>
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">status</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        lease状態を返す</span>
+
+<span class="sd">        :return: leaseの状態</span>
+
+<span class="sd">        - ``STARTING`` 予約情報を作成中</span>
+<span class="sd">        - ``PENDING`` 予約開始時刻が到来していない</span>
+<span class="sd">        - ``ACTIVE`` 予約開始時刻が到来した</span>
+<span class="sd">        - ``ERROR`` エラーが発生した</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_status</span>
+
+<div class="viewcode-block" id="VcpExtResourceChameleonHostLeaseInfo.extend">
+<a class="viewcode-back" href="../../../vcpsdk.html#vcpsdk.plugins.chameleon_ext.VcpExtResourceChameleonHostLeaseInfo.extend">[ドキュメント]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">extend</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">weeks</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">days</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">hours</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        予約を延長する。</span>
+<span class="sd">        weeks, days, hours のどれか一つを選んで指定する。複数の引数が指定された場合、単位が長い方の指定を優先する。</span>
+
+<span class="sd">        引数を指定しない場合、1日予約を延長する</span>
+
+<span class="sd">        chameleonの仕様により、予約の延長ができるのは予約が切れる48時間まえ。</span>
+<span class="sd">        その時間外に呼ぶと予約延長操作は失敗する。</span>
+<span class="sd">        予約に失敗した場合は例外を送出する。</span>
+
+<span class="sd">        :param weeks: 延長する週</span>
+<span class="sd">        :param days: 延長する日数</span>
+<span class="sd">        :param hours: 延長する時間</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">delta_str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">weeks</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">delta_str</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="s2">w&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">weeks</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">days</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">delta_str</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="s2">d&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">days</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">hours</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">delta_str</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="s2">h&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">hours</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># default</span>
+            <span class="n">delta_str</span> <span class="o">=</span> <span class="s2">&quot;1d&quot;</span>
+
+        <span class="c1"># 予約の切れる48時間前であるかチェック</span>
+        <span class="n">now</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">utcnow</span><span class="p">()</span>
+        <span class="n">end_date</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">strptime</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_end_date</span><span class="p">,</span> <span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2">T%H:%M:%S.</span><span class="si">%f</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">end_date</span> <span class="o">-</span> <span class="n">datetime</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span><span class="n">hours</span><span class="o">=</span><span class="mi">48</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">now</span><span class="p">:</span>
+            <span class="n">VcpSDKError</span><span class="p">(</span>
+                <span class="s2">&quot;lease update avairable at </span><span class="si">{}</span><span class="s2"> &quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                    <span class="n">end_date</span> <span class="o">-</span> <span class="n">datetime</span><span class="o">.</span><span class="n">delta</span><span class="p">(</span><span class="n">hours</span><span class="o">=</span><span class="mi">48</span><span class="p">)</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+
+        <span class="c1"># blazar lease-update --prolong-for &quot;1d&quot; my-first-lease</span>
+        <span class="n">cmd</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="s2">&quot;blazar&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;lease-update&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;--prolong-for&quot;</span><span class="p">,</span>
+            <span class="n">delta_str</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_host_lease_id</span><span class="p">,</span>
+        <span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">local_exec</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">env</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cli_env</span><span class="p">())</span></div>
+
+
+<div class="viewcode-block" id="VcpExtResourceChameleonHostLeaseInfo.delete">
+<a class="viewcode-back" href="../../../vcpsdk.html#vcpsdk.plugins.chameleon_ext.VcpExtResourceChameleonHostLeaseInfo.delete">[ドキュメント]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">delete</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        ホストの予約を削除する。</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">cmd</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;blazar&quot;</span><span class="p">,</span> <span class="s2">&quot;lease-delete&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_host_lease_id</span><span class="p">]</span>
+        <span class="p">(</span><span class="n">stdout</span><span class="p">,</span> <span class="n">stderr</span><span class="p">)</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">local_exec</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">env</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cli_env</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_host_lease_id</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_reservation_id</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="VcpExtResourceChameleonHostLeaseInfo.wait">
+<a class="viewcode-back" href="../../../vcpsdk.html#vcpsdk.plugins.chameleon_ext.VcpExtResourceChameleonHostLeaseInfo.wait">[ドキュメント]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">wait</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        leaseの状態(status)がACTIVEになるまで待つ</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_host_lease_id</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;no lease found&quot;</span><span class="p">)</span>
+
+        <span class="c1"># TODO: config</span>
+        <span class="k">for</span> <span class="n">_i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">20</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">update</span><span class="p">()</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_status</span> <span class="o">==</span> <span class="s2">&quot;ACTIVE&quot;</span><span class="p">:</span>
+                <span class="k">break</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_status</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;PENDING&quot;</span><span class="p">,</span> <span class="s2">&quot;STARTING&quot;</span><span class="p">]:</span>
+                <span class="c1"># reservation error</span>
+                <span class="c1"># TODO: エラーの理由を出力する  blazarの出力の 最終行をひろう</span>
+                <span class="c1"># 例: ERROR: No hosts are available</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span>
+                    <span class="s2">&quot;host reservation is failed, unknown status </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_status</span><span class="p">)</span>
+                <span class="p">)</span>
+            <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="VcpExtResourceChameleon">
+<a class="viewcode-back" href="../../../vcpsdk.html#vcpsdk.plugins.chameleon_ext.VcpExtResourceChameleon">[ドキュメント]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">VcpExtResourceChameleon</span><span class="p">(</span><span class="n">VcpChameleonOpenrc</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Chameleon クラウドインスタンスの予約を行うクラス</span>
+
+<span class="sd">    サンプルコード</span>
+
+<span class="sd">.. code-block:: python</span>
+
+<span class="sd">    # vpnカタログ情報を取得</span>
+<span class="sd">    vpn_catalog_name = &quot;default&quot;</span>
+<span class="sd">    vpn_catalog = vcpsdk.get_vpn_catalog(&quot;chameleon&quot;, catalog_name=vpn_catalog_name)</span>
+
+<span class="sd">    host_ext = vcpsdk.get_extension(&quot;chameleon&quot;)</span>
+
+<span class="sd">    # 指定可能項目</span>
+<span class="sd">    node_type = &quot;compute_skylake&quot;</span>
+<span class="sd">    min_instances = 1</span>
+<span class="sd">    max_instances = 3</span>
+
+<span class="sd">    host_ext.setup(</span>
+<span class="sd">        node_type,</span>
+<span class="sd">        start_date=start_date,</span>
+<span class="sd">        end_date=end_date,</span>
+<span class="sd">        min_instances=min_instances,</span>
+<span class="sd">        max_instances=max_instances,</span>
+<span class="sd">        lease_name_prefix = &quot;S003&quot;,</span>
+<span class="sd">        vpn_catalog=vpn_catalog,</span>
+<span class="sd">    )</span>
+
+<span class="sd">    # インスタンスの予約</span>
+<span class="sd">    lease_info = host_ext.reserve_host()</span>
+<span class="sd">    lease_info.wait()</span>
+
+<span class="sd">    print(&quot;host_lease_id is {}&quot;.format(lease_info.host_lease_id))</span>
+<span class="sd">    print(&quot;reservation_id is {}&quot;.format(lease_info.reservation_id))</span>
+<span class="sd">    print(&quot;status is {}&quot;.format(lease_info.status))</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="VcpExtResourceChameleon.setup">
+<a class="viewcode-back" href="../../../vcpsdk.html#vcpsdk.plugins.chameleon_ext.VcpExtResourceChameleon.setup">[ドキュメント]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">setup</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">node_type</span><span class="p">,</span>
+        <span class="n">start_date</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">end_date</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">min_instances</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+        <span class="n">max_instances</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+        <span class="n">vcpus</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">memory_mb</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">disk_gb</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">lease_name_prefix</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">vpn_catalog</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; chameleon のホストの予約情報を作成する (実際の予約処理は reserve_host関数で行う)</span>
+
+<span class="sd">        :param node_type: chameleon 上での node_type</span>
+<span class="sd">        :param start_date: 予約の開始時刻 (タイムゾーンはUTCで ``YYYY-mm-dd HH:MM`` 形式) Noneを指定した場合は、呼び出し時の時刻が使われる。</span>
+<span class="sd">        :param end_date: 予約の終了時刻 (タイムゾーンはUTCで ``YYYY-mm-dd HH:MM`` 形式) Noneを指定した場合は、1日後</span>
+<span class="sd">        :param min_instances: 最小台数</span>
+<span class="sd">        :param max_instances: 最大台数</span>
+<span class="sd">        :param vcpus: VCPU数    future use</span>
+<span class="sd">        :param memory_mb: メモリ容量(MBytes)    future use</span>
+<span class="sd">        :param disk_gb: Disk容量(GBytes)    future use</span>
+<span class="sd">        :param lease_name_prefix: Chameleon のlease 名に付けるprefix</span>
+<span class="sd">        :param vpn_catalog: VPNカタログ情報</span>
+
+<span class="sd">        .. note::</span>
+<span class="sd">           vcpus, memory_mb, disk_gb の指定は現状の実装では、無視する。</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_vpn_catalog</span> <span class="o">=</span> <span class="n">vpn_catalog</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_property</span><span class="p">(</span><span class="n">vpn_catalog</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_node_type</span> <span class="o">=</span> <span class="n">node_type</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_start_date</span> <span class="o">=</span> <span class="n">start_date</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_end_date</span> <span class="o">=</span> <span class="n">end_date</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_min_instances</span> <span class="o">=</span> <span class="n">min_instances</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_max_instances</span> <span class="o">=</span> <span class="n">max_instances</span>
+
+        <span class="c1"># TODO: 調査</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_vcpus</span> <span class="o">=</span> <span class="n">vcpus</span>
+        <span class="c1"># TODO: 調査</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_memory_mb</span> <span class="o">=</span> <span class="n">memory_mb</span>
+        <span class="c1"># TODO: 調査</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_disk_gb</span> <span class="o">=</span> <span class="n">disk_gb</span>
+        <span class="c1"># TODO: VC id + unit名 でつける, 連想できたほうが良い</span>
+        <span class="c1"># 予約が先になるのでVC id, Unit名はつけられない</span>
+        <span class="n">prefix</span> <span class="o">=</span> <span class="n">uuid</span><span class="o">.</span><span class="n">uuid4</span><span class="p">()</span><span class="o">.</span><span class="n">hex</span><span class="p">[:</span><span class="mi">10</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">lease_name_prefix</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_host_lease_name</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="s2">-</span><span class="si">{}</span><span class="s2">-host&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">lease_name_prefix</span><span class="p">,</span> <span class="n">prefix</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_host_lease_name</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="s2">-host&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">prefix</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_reservation_id</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_host_lease_id</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="VcpExtResourceChameleon.reserve_host">
+<a class="viewcode-back" href="../../../vcpsdk.html#vcpsdk.plugins.chameleon_ext.VcpExtResourceChameleon.reserve_host">[ドキュメント]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">reserve_host</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        クラウドインスタンスの予約を実行する。</span>
+
+<span class="sd">        :return: クラウドインスタンスの予約結果 ( :class:`vcpsdk.plugins.chameleon_ext.VcpExtResourceChameleonHostLeaseInfo` )</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># TODO: hypervisor propertiesを引数で取るようにする $vcpu, $memory_mb, $disk_gb</span>
+        <span class="n">resource_spec_detail</span> <span class="o">=</span> <span class="p">[[</span><span class="s2">&quot;=&quot;</span><span class="p">,</span> <span class="s2">&quot;$node_type&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_node_type</span><span class="p">]]</span>
+        <span class="n">hypervisor_spec_detail</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="c1"># 条件を指定しても効果が有るのか不明なためコメントアウト</span>
+        <span class="c1"># if self._vcpus is not None:</span>
+        <span class="c1">#     # TODO; 不等号固定で良いか?</span>
+        <span class="c1">#     hypervisor_spec_detail.append([&quot;&gt;=&quot;, &quot;$vcpu&quot;, str(self._vcpu)])</span>
+        <span class="c1"># if self._memory_mb is not None:</span>
+        <span class="c1">#     # TODO; 不等号固定で良いか?</span>
+        <span class="c1">#     hypervisor_spec_detail.append([&quot;&gt;=&quot;, &quot;$memory_mb&quot;, str(self._memory_mb)])</span>
+        <span class="c1"># if self._disk_gb is not None:</span>
+        <span class="c1">#     disk_bytes = 1024 * 1024 * 1024 * self._disk_gb</span>
+        <span class="c1">#     resource_spec_detail.append(</span>
+        <span class="c1">#         [&quot;&gt;=&quot;, &quot;$storage_devices.0.size&quot;, str(disk_bytes)]</span>
+        <span class="c1">#     )</span>
+        <span class="c1"># if self._disk_gb is not None:</span>
+        <span class="c1">#     # TODO; 不等号固定で良いか?</span>
+        <span class="c1">#     spec_detail.append([&#39;&gt;=&#39;, &#39;$disk_gb&#39;, str(self._disk_gb)])</span>
+
+        <span class="c1"># TODO: andは3つ以上の条件を取れるか確認</span>
+        <span class="c1"># TODO: 取れない場合は、木にする</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">hypervisor_spec_detail</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">hypervisor_spec</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">hypervisor_spec_detail</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">hypervisor_spec</span> <span class="o">=</span> <span class="s2">&quot;hypervisor_properties=</span><span class="si">{}</span><span class="s2">,&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">hypervisor_spec_detail</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># 複数条件をandで結合する</span>
+            <span class="n">hypervisor_spec</span> <span class="o">=</span> <span class="s2">&quot;hypervisor_properties=</span><span class="si">{}</span><span class="s2">,&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">([</span><span class="s2">&quot;and&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">hypervisor_spec_detail</span><span class="p">)</span>
+            <span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">resource_spec_detail</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">resource_spec</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">resource_spec_detail</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">resource_spec</span> <span class="o">=</span> <span class="s2">&quot;resource_properties=</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">resource_spec_detail</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># 複数条件をandで結合する</span>
+            <span class="n">resource_spec</span> <span class="o">=</span> <span class="s2">&quot;resource_properties=</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">([</span><span class="s2">&quot;and&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">resource_spec_detail</span><span class="p">)</span>
+            <span class="p">)</span>
+
+        <span class="n">chameleon_spec</span> <span class="o">=</span> <span class="s2">&quot;min=</span><span class="si">{}</span><span class="s2">,max=</span><span class="si">{}</span><span class="s2">,</span><span class="si">{}{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_min_instances</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_max_instances</span><span class="p">,</span> <span class="n">hypervisor_spec</span><span class="p">,</span> <span class="n">resource_spec</span>
+        <span class="p">)</span>
+
+        <span class="n">date_opt</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_start_date</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">date_opt</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;--start-date=</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_start_date</span><span class="p">))</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_end_date</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">date_opt</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;--end-date=</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_end_date</span><span class="p">))</span>
+
+        <span class="n">cmd</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="p">[</span><span class="s2">&quot;blazar&quot;</span><span class="p">,</span> <span class="s2">&quot;lease-create&quot;</span><span class="p">,</span> <span class="s2">&quot;-f&quot;</span><span class="p">,</span> <span class="s2">&quot;json&quot;</span><span class="p">,]</span>
+            <span class="o">+</span> <span class="n">date_opt</span>
+            <span class="o">+</span> <span class="p">[</span><span class="s2">&quot;--physical-reservation&quot;</span><span class="p">,</span> <span class="n">chameleon_spec</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_host_lease_name</span><span class="p">]</span>
+        <span class="p">)</span>
+        <span class="p">(</span><span class="n">stdout</span><span class="p">,</span> <span class="n">stderr</span><span class="p">)</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">local_exec</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">env</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cli_env</span><span class="p">())</span>
+
+        <span class="c1"># Createdというjsonではない行(1行)を消す</span>
+        <span class="n">stdout</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">stdout</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)[</span><span class="mi">1</span><span class="p">:])</span>
+
+        <span class="n">lease</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">stdout</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_host_lease_id</span> <span class="o">=</span> <span class="n">lease</span><span class="p">[</span><span class="s2">&quot;id&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_host_lease_info</span> <span class="o">=</span> <span class="n">VcpExtResourceChameleonHostLeaseInfo</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_provider_name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config_dir</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_token</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_host_lease_info</span><span class="o">.</span><span class="n">setup</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_host_lease_id</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_vpn_catalog</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_host_lease_info</span><span class="o">.</span><span class="n">update</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_host_lease_info</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">text</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__str__</span><span class="p">()</span>
+        <span class="n">text</span> <span class="o">+=</span> <span class="s2">&quot;&quot;&quot;</span>
+
+<span class="s2">node_type: </span><span class="si">{node_type}</span>
+<span class="s2">start_date: </span><span class="si">{start_date}</span>
+<span class="s2">end_date: </span><span class="si">{end_date}</span>
+<span class="s2">min_instances: </span><span class="si">{min_instances}</span>
+<span class="s2">max_instances: </span><span class="si">{max_instances}</span>
+<span class="s2">vcpus: </span><span class="si">{vcpus}</span>
+<span class="s2">memory_mb: </span><span class="si">{memory_mb}</span><span class="s2"> MB</span>
+<span class="s2">disk_gb: </span><span class="si">{disk_gb}</span><span class="s2"> GB</span>
+<span class="s2">host_lease_name: </span><span class="si">{host_lease_name}</span>
+<span class="s2">reservation_id: </span><span class="si">{reservation_id}</span>
+<span class="s2">host_lease_id: </span><span class="si">{host_lease_id}</span><span class="s2">&quot;&quot;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="n">node_type</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_node_type</span><span class="p">,</span>
+            <span class="n">start_date</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_start_date</span><span class="p">,</span>
+            <span class="n">end_date</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_end_date</span><span class="p">,</span>
+            <span class="n">min_instances</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_min_instances</span><span class="p">,</span>
+            <span class="n">max_instances</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_max_instances</span><span class="p">,</span>
+            <span class="n">vcpus</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_vcpus</span><span class="p">,</span>
+            <span class="n">memory_mb</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_memory_mb</span><span class="p">,</span>
+            <span class="n">disk_gb</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_disk_gb</span><span class="p">,</span>
+            <span class="n">host_lease_name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_host_lease_name</span><span class="p">,</span>
+            <span class="n">reservation_id</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_reservation_id</span><span class="p">,</span>
+            <span class="n">host_lease_id</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_host_lease_id</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">text</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, NII.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

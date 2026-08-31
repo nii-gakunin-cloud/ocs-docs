@@ -141,20 +141,21 @@ Verify password: 新しいパスワード
 
 - Ubuntu 版
   
-  * Ubuntu Official リポジトリの LTS (20.04) 版をベース・イメージとして使用
+  * Ubuntu Official リポジトリの LTS (24.04) 版をベース・イメージとして使用
     * <https://hub.docker.com/_/ubuntu>
-
-- CentOS 版
-  
-  * CentOS Official リポジトリの安定版リリース (7.x) をベース・イメージとして使用
-    * <https://hub.docker.com/_/centos>
 
 - nvidia-docker2 版
   
-  * Ubuntu Official リポジトリの LTS (20.04) 版をベース・イメージとして使用
+  * Ubuntu Official リポジトリの LTS (24.04) 版をベース・イメージとして使用
   * nvidia-docker2 パッケージをインストール済み
     * <https://nvidia.github.io/nvidia-docker>
   * GPU搭載環境での利用を前提としている
+
+- CentOS 版（Deprecated）
+  
+  * CentOS Official リポジトリの安定版リリース (7.x) をベース・イメージとして使用
+    * <https://hub.docker.com/_/centos>
+    * CentOS 7公式サポート終了に伴い、VCPでもサポート終了
 
 ### 共通機能
 
@@ -181,7 +182,7 @@ Verify password: 新しいパスワード
 
 #### NFSサーバ
 
-Baseコンテナの環境変数 `NFS_AUTOSTART` によりNFSサーバ自動起動の要否を指定可能である。 `vcp/base:1.8.1-*` では NFS v3をサポートする。
+Baseコンテナの環境変数 `NFS_AUTOSTART` によりNFSサーバ自動起動の要否を指定可能である。 `vcp/base:1.8.1-*` 以降では NFS v3をサポートする。
 
 NFSの公開ディレクトリ設定は以下のとおり
 
@@ -503,16 +504,20 @@ aws|○|○|○|○|○
 azure|○|○|○|○|○
 aws_spot|○|○ `#2` |× `#1` |○ `#2` |×
 sakura|○|○|×|○|○
-oracle|○|○|○|○|×
+oracle|○|○|○|○|○
 vmware|○|×|×|×|×
 hokudai|○|×|×|×|×
 abc|○|×|×|×|×
 aic|○|×|×|×|×
 chameleon|× `#3`|× |×|×|×
 gcp|○|○|×|×|×
+mdx2|○|○|○ `#4`|○|○
+proxmox VE|○|×|○ `#4`|×|○
 
 `#1` クラウドインスタンスにタグがつかない。スポットリクエストにもタグがつかないことがある。
 
 `#2` aws_spotではプロバイダ aws のディスク作成VCP REST APIで作成したディスク(実態は EBSボリューム)をアタッチすることができる。
 
 `#3` `sharedwan1` を使用した場合、IPアドレスは指定できない。
+
+`#4` key-value型式のタグがサポートされていないため、“{key}-{value}”のように、KeyとValueをハイフンで連結した文字列を登録する。
