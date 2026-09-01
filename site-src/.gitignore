@@ -1,0 +1,7 @@
+# ビルド成果物
+site/
+
+# Zensical の作業用ディレクトリ
+.cache/
+
+.venv/

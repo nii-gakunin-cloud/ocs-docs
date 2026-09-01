@@ -1,0 +1,90 @@
+site_name: VCP ドキュメント
+site_description: VCP (Virtual Cloud Provider) のドキュメント
+docs_dir: docs
+
+# リンクを `concepts/index.html` 形式で生成する。
+# Web サーバなしでも zip を展開してブラウザで直接開けるようにするため。
+use_directory_urls: false
+
+# 目次。ここに書いた順序でサイドバーに表示される。
+# 省略するとファイル名順に自動生成されるため、意図した順序にするには明示する。
+nav:
+  - ホーム: README.md
+  - コンセプト: concepts/README.md
+  - はじめる:
+      - 概要: getting-started/README.md
+      - 1. VCP 環境を構築する: getting-started/setup.md
+      - 2. 最初の VC ノードを起動する: getting-started/first-node.md
+  - チュートリアル: tutorials/README.md
+  - 運用ガイド: operations/README.md
+  - SDK リファレンス: sdk/README.md
+  - ベースコンテナ仕様書: specs/base-container.md
+  - アプリケーションテンプレート: templates/README.md
+  - FAQ・サポートポリシー:
+      - 概要: support/README.md
+      - CoursewareHub FAQ: support/faq/coursewarehub.md
+  # --- 以下は将来それぞれ別リポジトリに分離する ---
+  - VC コントローラ:
+      - 概要: vcc/index.md
+      - インストール: vcc/installation.md
+      - 管理操作: vcc/manipulation.md
+      - 開発: vcc/development.md
+      - リファレンス:
+          - CLI コマンド: vcc/references/cli_commands.md
+          - VPN カタログ: vcc/references/vpncatalog.md
+          - Proxmox VE: vcc/references/providers/proxmox.md
+  - ベースコンテナ:
+      - 概要: basecontainer/index.md
+      - イメージ: basecontainer/images.md
+  - VCP CLI:
+      - 概要: vcpcli/index.md
+
+theme:
+  name: material
+  language: ja
+  features:
+    - navigation.sections
+    - navigation.top
+    - content.code.copy
+  palette:
+    - scheme: default
+      toggle:
+        icon: material/weather-night
+        name: ダークモードに切り替え
+    - scheme: slate
+      toggle:
+        icon: material/weather-sunny
+        name: ライトモードに切り替え
+
+markdown_extensions:
+  # 表
+  - tables
+  # 注記ブロック (!!! note 形式)
+  - admonition
+  # 見出しへの属性付与。他コンポーネントの文書で使われている
+  # `# 見出し { #anchor }` 形式に対応するために必要。
+  - attr_list
+  # 見出しへのリンクアイコン付与
+  - toc:
+      permalink: true
+  # コードブロックの拡張
+  - pymdownx.superfences
+  # GitHub 形式の警告ブロック (> [!NOTE]) を admonition に変換
+  - pymdownx.blocks.admonition
+
+plugins:
+  # 日本語検索を有効にする
+  - search:
+      lang: ja
+
+# 存在しないファイルへの相対リンクをビルド時に警告する。
+# リンク切れの早期発見のため有効にしておく。
+validation:
+  links:
+    absolute_links: warn
+    unrecognized_links: warn
+
+# MkDocs は既定で docs 直下の templates/ を除外する (テーマ用に予約されているため)。
+# アプリケーションテンプレートの節で使用するため、否定パターンで再度対象に含める。
+exclude_docs: |
+  !/templates/
