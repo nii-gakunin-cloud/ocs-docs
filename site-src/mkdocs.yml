@@ -23,6 +23,7 @@ nav:
   - FAQ・サポートポリシー:
       - 概要: support/README.md
       - CoursewareHub FAQ: support/faq/coursewarehub.md
+  - 用語集: glossary.md
   # --- 以下は将来それぞれ別リポジトリに分離する ---
   - VC コントローラ:
       - 概要: vcc/index.md
@@ -67,6 +68,8 @@ markdown_extensions:
   # 見出しへのリンクアイコン付与
   - toc:
       permalink: true
+  # 定義リスト (用語集で使用)
+  - def_list
   # コードブロックの拡張
   - pymdownx.superfences
   # GitHub 形式の警告ブロック (> [!NOTE]) を admonition に変換
