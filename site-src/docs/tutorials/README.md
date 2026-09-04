@@ -14,7 +14,9 @@
 - [101 VC ノードの起動、削除](http://tutorials.vcp-handson.org/101.html)
 - [201 GPU インスタンスの利用](http://tutorials.vcp-handson.org/201.html)
 
-101 は[はじめる](../getting-started/first-node.md)と同じ内容を扱っています。
+101 は、[はじめる](../getting-started/first-node.md)で扱う VC ノードの起動と削除に加えて、複数のクラウド
+プロバイダにまたがる利用など、より広い範囲を扱っています。使用している Notebook は現行のものと異なりますが、
+実行の様子を動画で確認できます。
 
 ---
 

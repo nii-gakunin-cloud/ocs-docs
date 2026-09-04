@@ -13,8 +13,7 @@ Jupyter Notebook として記述したものです。テンプレートを順に
 
 | やりたいこと | テンプレート |
 |---|---|
-| Jupyter Notebook を使った講義・演習を行いたい | [講義演習環境 (CoursewareHub)](#coursewarehub) |
-| 複数科目で同時に使えるプログラミング演習環境がほしい | [MCJ-CloudHub](#mcj-cloudhub) |
+| Jupyter Notebook を使った講義・演習を行いたい | [講義演習環境 (CoursewareHub)](#coursewarehub) / [MCJ-CloudHub](#mcj-cloudhub) |
 | Moodle で学習管理システムを立てたい | [LMS (Moodle)](#moodle) |
 | HPC クラスタを構築したい | [HPC (OpenHPC)](#openhpc) |
 | HPC クラスタをブラウザから使えるようにしたい | [Open OnDemand](#open-ondemand) |
@@ -36,6 +35,11 @@ Jupyter Notebook として記述したものです。テンプレートを順に
 ---
 
 ## 教育・学習環境
+
+Jupyter Notebook を用いた講義・演習環境には、CoursewareHub と MCJ-CloudHub の 2 つのテンプレートが
+あります。いずれも JupyterHub を基盤とし、教材の配布や課題の回収、操作履歴の収集といった講義に必要な
+機能を備えています。MCJ-CloudHub は、これらに加えて nbgrader による課題の採点を特徴としています。
+用途に応じて選択してください。
 
 ### 講義演習環境 (CoursewareHub) { #coursewarehub }
 
