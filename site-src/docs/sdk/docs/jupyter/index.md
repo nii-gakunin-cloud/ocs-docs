@@ -16,7 +16,7 @@
 
 ### VCコントローラ CA証明書
 
-JupyterNotebookからVCコントローラ、VaultサーバへのアクセスにTLSを使用するために、予め発行したCA証明書が必要。VCコントローラとJupyterNotebookを同じホスト上で動作させる場合等、自己署名証明書を使用する場合、その証明書を予め証明書リスト（`/usr/local/share/ca-certificates` 等）に登録しておく必要がある。  
+JupyterNotebookからVCコントローラ、VaultサーバへのアクセスにTLSを使用するために、予め発行したCA証明書が必要。VCコントローラとJupyterNotebookを同じホスト上で動作させる場合等、自己署名証明書を使用する場合、その証明書を予め証明書リスト（`/usr/local/share/ca-certificates` 等）に登録しておく必要がある。登録した証明書は、コンテナ起動のたびに `update-ca-certificates` が自動実行されることで反映されるため、利用者が手動で `update-ca-certificates` を実行する必要はない。  
 
 !!! note  
 
@@ -41,7 +41,7 @@ VCPでは、前述した仕様を満たすJupyter Notebook環境をDockerコン�
 |------|-----|----|------|------|
 |`REQUESTS_CA_BUNDLE`|VCコントローラ CA証明書のファイルパス|`/etc/ssl/certs/ca-certificates.crt`|`/etc/ssl/certs/ca-certificates.crt`| |
 |`TZ`|JupyterNotebook コンテナ上の timezone|`JST-9`|`JST-9`| 例: 東京(+09:00)の場合は `JST-9` を指定 |
-|`VCP_CONTAINER_VERSION`|JupyterNotebook コンテナのバージョン|`vcpjupyter/cloudop-notebook:20250401-ssl-cc`||参照用に、コンテナイメージビルド時に指定されている|
+|`VCP_CONTAINER_VERSION`|JupyterNotebook コンテナのバージョン|`lab-4.5.7-simple-dev`||参照用に、コンテナイメージビルド時に指定されている|
 |`PASSWORD`|JupyterNotebook のログインパスワード|`任意のパスワード`| | |
 
 !!! note

@@ -82,4 +82,3 @@ ug.cleanup()
 * `sdk.df_ugroups()` / `sdk.df_nodes()` で、自分が保有する VC/Node の一覧を横断的に確認できる。
 * `unit.watch_nodes()` を使うと、Nodeの死活状態変化を継続的に監視できる。
 * より詳しい操作は [APIリファレンス](api/vcpsdk.md) を参照。
-* VCノードの起動・削除を行うサンプル実装（jupyterノートブック）が利用可能。 （`examples`ディレクトリ参照）

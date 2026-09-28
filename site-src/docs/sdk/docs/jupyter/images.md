@@ -9,7 +9,7 @@
     Harbor API（v2.0）を用いて、利用可能なベースコンテナイメージのタグ一覧を取得することができる。  
 
     ```
-    curl -s https://harbor.vcloud.nii.ac.jp/api/v2.0/projects/vcpjupyter/repositories/cloudop-notebook/artifacts?q=tags=* | jq .[].tags[0].name
+    curl -s "https://harbor.vcloud.nii.ac.jp/api/v2.0/projects/vcpjupyter/repositories/cloudop-notebook/artifacts?q=tags=*" | jq .[].tags[0].name
     ```
 
 ## Jupyter-LC_docker ベース
@@ -25,7 +25,7 @@
 ## Jupyter公式イメージベース
 
 Jupyterプロジェクト公式の [Jupyter Docker Stacks](https://jupyter-docker-stacks.readthedocs.io/en/latest/) のイメージをベースイメージとし、VCP向けにカスタマイズしたイメージ。  
-最もベーシックな構成のイメージ（[`jupyter/base-notebook`](https://quay.io/repository/jupyter/base-notebook)）をベースイメージとし、最低限の機能に絞った軽量版。タグに `-simple` が付与される。  
+ベーシックな構成のイメージ（[`jupyter/base-notebook`](https://quay.io/repository/jupyter/base-notebook)）をベースとし、最低限の機能に絞った軽量版。タグに `-simple` が付与される。  
 
 ### リリース一覧
 

@@ -15,21 +15,6 @@ options:
   -h, --help  show this help message and exit
 ```
 
-## `vcc init-occtr`
-
-```text
-usage: vcc init-occtr [-h] [--consul_base_url CONSUL_BASE_URL] [--base_registry_address BASE_REGISTRY_ADDRESS]
-
-Initialize VC Controller
-
-options:
-  -h, --help            show this help message and exit
-  --consul_base_url CONSUL_BASE_URL
-                        Base URL for Consul (default: http://127.0.0.1:8500/v1/)
-  --base_registry_address BASE_REGISTRY_ADDRESS
-                        Address of the user registry for VCP (default: None -> means `<vcc ip>:5000`)
-```
-
 ## `vcc node-state`
 
 ### `vcc node-state get`
@@ -51,18 +36,23 @@ options:
 ### `vcc node-state set`
 
 ```text
-usage: vcc node-state set [-h] vcid unit_name node_id state
+usage: vcc node-state set [-h]
+                          vcid unit_name node_id
+                          {BOOTING,CONTAINER_ERROR,DELETING,HOST_ERROR,POWER_OFF,RESUMING,RUNNING,SHUTTING_DOWN,STOPPED,STOPPING,SUSPENDED,SUSPENDING,UNWATCH}
 
 Set VcNode info
+WARNING: This directly overwrites the stored node state without touching
+the actual machine, so it can leave the state inconsistent with reality.
 
 positional arguments:
   vcid
   unit_name
   node_id
-  state       Node state to set (e.g., RUNNING, STOPPED, etc.)
+  {BOOTING,CONTAINER_ERROR,DELETING,HOST_ERROR,POWER_OFF,RESUMING,RUNNING,SHUTTING_DOWN,STOPPED,STOPPING,SUSPENDED,SUSPENDING,UNWATCH}
+                        Node state to set
 
 options:
-  -h, --help  show this help message and exit
+  -h, --help            show this help message and exit
 ```
 
 ## `vcc vpncatalog`
@@ -86,8 +76,8 @@ usage: vcc vpncatalog set [-h] [-p PATH]
 Update VPN catalog config
 
 options:
-  -h, --help            show this help message and exit
-  -p PATH, --path PATH  Path to the VPN catalog YAML file
+  -h, --help       show this help message and exit
+  -p, --path PATH  Path to the VPN catalog YAML file
 ```
 
 ## `vcc user`
@@ -97,11 +87,11 @@ options:
 ```text
 usage: vcc user add [-h] user_name user_role
 
-Add a user with a role (REGULAR or SUPER)
+Add a user with a role (regular or super)
 
 positional arguments:
   user_name
-  user_role
+  user_role   User role (regular or super)
 
 options:
   -h, --help  show this help message and exit
@@ -116,7 +106,7 @@ Modify a user's role
 
 positional arguments:
   user_name
-  user_role
+  user_role   User role (regular or super)
 
 options:
   -h, --help  show this help message and exit
@@ -145,6 +135,22 @@ List all users and their info
 
 options:
   -h, --help  show this help message and exit
+```
+
+### `vcc user delete`
+
+```text
+usage: vcc user delete [-h] [-f] user_name
+
+Delete user
+
+positional arguments:
+  user_name
+
+options:
+  -h, --help   show this help message and exit
+  -f, --force  Delete user even if the user owns VC(Unit group) (Default: False)
+               NOTE: owned VC(s) are not deleted and remain after the user is removed
 ```
 
 ## `vcc token`
@@ -180,9 +186,12 @@ options:
 ### `vcc token list`
 
 ```text
-usage: vcc token list [-h]
+usage: vcc token list [-h] [user_name]
 
 List all token info
+
+positional arguments:
+  user_name
 
 options:
   -h, --help  show this help message and exit
@@ -191,13 +200,13 @@ options:
 ### `vcc token revoke`
 
 ```text
-usage: vcc token revoke [-h] token
+usage: vcc token revoke [-h] (-t TOKEN | -a ACCESSOR)
 
 Revoke token
 
-positional arguments:
-  token
-
 options:
-  -h, --help  show this help message and exit
+  -h, --help            show this help message and exit
+  -t, --token TOKEN     Specify target by token itself
+  -a, --accessor ACCESSOR
+                        Specify target by token accessor
 ```

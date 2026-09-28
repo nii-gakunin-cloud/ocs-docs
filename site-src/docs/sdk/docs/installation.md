@@ -18,11 +18,11 @@ pip install git+https://github.com/nii-gakunin-cloud/vcpsdk.git
     依存パッケージの1つ (`mdx`) は GitHub 上のリポジトリから直接インストールされるため、
     インストールを行う環境に `git` コマンドが必要。
 
-VCP提供のJupyterNotebookコンテナイメージには、あらかじめ VCP SDK がインストール済みの場合であるため、本手順は不要。
+VCP提供のJupyterNotebookコンテナイメージには、あらかじめ VCP SDK がインストール済みであるため、本手順は不要。
 
 ## 設定ディレクトリの準備
 
-VCP SDK は、VCコントローラへの接続情報やクラウド毎のデフォルトパラメータを設定ディレクトリ配下の
+VCP SDK は、VCコントローラへの接続情報やクラウド毎のデフォルトパラメータを **設定ディレクトリ** 配下の
 YAMLファイルから読み込む。設定ディレクトリは `VcpSDK` 初期化時に以下の優先順位で決定される。
 
 1. `VcpSDK(config_dir=...)` に指定した値
@@ -33,14 +33,14 @@ YAMLファイルから読み込む。設定ディレクトリは `VcpSDK` 初期
 
 | ファイル | 必須 | 内容 |
 |---|---|---|
-| `vcp_config.yml` | ✓ | VCコントローラの接続先、利用するクラウドプロバイダごとのクレデンシャル参照先など |
-| `vcp_flavor.yml` | | クラウドプロバイダ・flavor名(`small`/`medium`/`large`等)ごとのデフォルトスペック(インスタンスタイプ、ディスクサイズ等) |
+| [`vcp_config.yml`](#vcp_configyml) | ✓ | VCコントローラの接続先、利用するクラウドプロバイダごとのクレデンシャル参照先など |
+| [`vcp_flavor.yml`](#vcp_flavorml) | | クラウドプロバイダ・flavor名(`small`/`medium`/`large`等)ごとのデフォルトスペック(インスタンスタイプ、ディスクサイズ等) |
 
 どちらのファイルも `vcpsdk/schema/` 配下の JSON Schema でバリデーションされるため、
 未対応のキーを指定するとロード時にエラーとなる。サンプルは `vcpsdk/setup/vcp_config.yml`,
 `vcpsdk/setup/vcp_flavor.yml` を参照。
 
-### `vcp_config.yml`
+### vcp_config.yml
 
 ```yaml
 vcc:
@@ -65,11 +65,11 @@ aws:
 `occtr` コンテナに接続する場合は `occtr` のままでよい)。
 
 利用するクラウドプロバイダごとのセクション(`aws`, `azure`, `gcp`, `oracle`, `sakura`, `vmware`,
-`proxmox`, `mdx2` など)には、クレデンシャルの実体を直接書くことは非推奨。`vault://cubbyhole/<provider>/<key>` の
-形式で Vault 上のパスを参照することで、Vaultに登録したクレデンシャル情報を利用することを想定している。`private_network` には、利用するVPNカタログ名(VCコントローラの
+`proxmox`, `mdx2` など)には、クレデンシャルの実体を直接書かず `vault://cubbyhole/<provider>/<key>` の
+形式で Vault 上のパスを参照する。`private_network` には、利用するVPNカタログ名(VCコントローラの
 `vpn_catalog.yml` で定義された名前)を指定する。
 
-### `vcp_flavor.yml`
+### vcp_flavor.yml
 
 プロバイダ・flavor名ごとのデフォルトスペックを定義する。`VcpSDK.get_spec(provider_name, flavor)` は
 この定義を初期値として spec オブジェクトを生成する(個々のパラメータは spec オブジェクトの属性として
