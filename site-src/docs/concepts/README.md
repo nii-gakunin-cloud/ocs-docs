@@ -26,7 +26,7 @@ VCP は大きく 3 つの部分から成ります。
 [ Jupyter Notebook + VCP SDK ]   ← 利用者が操作する
               │  VCP REST API
               ▼
-      [ VC コントローラ ]         ← 機関内に構築・運用する
+      [ VC コントローラ ]         ← 機関が構築・運用する
               │
               ▼
 [ クラウド上の VC ノード群 ]      ← 実際の計算資源
@@ -50,21 +50,26 @@ Terraform とプロバイダごとのプラグインが担っています。
 
 ## ユーザと権限
 
-VC 利用者は、VC コントローラから発行された**アクセストークン**を使って VCP を操作します。トークンに
-特権が設定されているかどうかで、操作できる範囲が変わります。
+VC コントローラには、利用者ごとに**ユーザ**を登録します。VC 利用者は、自分のユーザに対して発行された
+**アクセストークン**を使って VCP を操作します。ユーザには `regular` または `super` の**ロール**を設定し、
+ロールによって操作できる範囲が変わります。
 
 ![ユーザ種別と操作範囲](images/vc-user.png)
 
-**通常の VC 利用者**は、自身が作成した UnitGroup のみを操作できます。UnitGroup を作成した利用者を
+**`regular` ロール**のユーザは、自身が作成した UnitGroup のみを操作できます。UnitGroup を作成したユーザを
 その UnitGroup の **owner** と呼びます。上図では、userA は ugroup1、userB は ugroup2 をそれぞれ
 操作できますが、互いの UnitGroup には関与できません。
 
-**Superuser トークンを持つ利用者**は、owner が誰であるかにかかわらず、すべての UnitGroup を操作
-できます。複数の利用者が同じ VC コントローラを共有する環境で、全体を把握・管理する必要がある場合に
-使用します。
+**`super` ロール**のユーザは、操作時に特権 (`privileged`) を指定すると、owner が誰であるかにかかわらず、
+すべての UnitGroup を操作できます。上図の「Superuser トークン所有者」がこれにあたります。複数の利用者が
+同じ VC コントローラを共有する環境で、全体を把握・管理する必要がある場合に使用します。
 
-トークンの発行と失効は VC 管理者が行います。手順は[管理操作](../vcc/manipulation.md)を参照して
-ください。
+クラウドプロバイダの認証情報は、アクセストークンごとに保存されます。そのため、VC 利用者は自分の
+アクセストークンを使って、自分で認証情報を登録します。
+
+ユーザの登録とアクセストークンの発行は VC 管理者が行います。手順はポータブル版の
+[管理操作](https://github.com/nii-gakunin-cloud/ocs-vcp-portable/blob/feature/vcc2610-volume/docs/manipulation.md)を参照してください。トークンの失効など、そのほかの操作は
+[vcc コマンド一覧](https://github.com/nii-gakunin-cloud/ocs-vcp-portable/blob/feature/vcc2610-volume/docs/references/cli_commands.md)を参照してください。
 
 ---
 
