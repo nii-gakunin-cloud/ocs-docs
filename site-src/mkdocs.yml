@@ -27,13 +27,7 @@ nav:
   # --- 以下は将来それぞれ別リポジトリに分離する ---
   - VC コントローラ:
       - 概要: vcc/index.md
-      - インストール: vcc/installation.md
-      - 管理操作: vcc/manipulation.md
       - 開発: vcc/development.md
-      - リファレンス:
-          - CLI コマンド: vcc/references/cli_commands.md
-          - VPN カタログ: vcc/references/vpncatalog.md
-          - Proxmox VE: vcc/references/providers/proxmox.md
   - ベースコンテナ:
       - 概要: basecontainer/index.md
       - イメージ: basecontainer/images.md
